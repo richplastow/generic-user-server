@@ -8,5 +8,10 @@
     "test": "node run-tests.js"
   },
   "author": "Rich Plastow",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.13"
+  }
 }

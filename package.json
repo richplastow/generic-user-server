@@ -1,0 +1,12 @@
+{
+  "name": "generic-user-server",
+  "version": "1.0.0",
+  "description": "A Node.js Express server which manages user auth and accounts for multiple domains at once",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node run-tests.js"
+  },
+  "author": "Rich Plastow",
+  "license": "MIT"
+}

@@ -3,19 +3,23 @@ import { GenericUserServer } from '../index.js';
 const endpoints = [
     {
         method: 'get',
-        path: '/ping',
-        handler: (_req, res) => {
-            res.send('{"result":"pong"}');
+        path: '/domains',
+        handler: (_req, res, gus) => {
+            res.json({ result:gus.domains });
         },
     },
     {
         method: 'post',
         path: '/parse-body',
         handler: (req, res) => {
-            res.send(JSON.stringify({ result:req.body.name }));
+            res.json({ result:req.body.name });
         },
     }
 ];
 
-const example1 = new GenericUserServer({ endpoints, gusName: 'example-1' });
+const example1 = new GenericUserServer({
+    domains: ['tunefields'],
+    endpoints,
+    gusName: 'example-1',
+});
 example1.initialise();

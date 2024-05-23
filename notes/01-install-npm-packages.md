@@ -45,3 +45,17 @@ npm i jsonwebtoken
 
 node_modules/ is now 3,032,842 bytes (5 MB on disk) for 766 items.
 
+## @aws-sdk/client-dynamodb
+
+AWS SDK for JavaScript DynamoDB Client for Node.js, Browser and React Native.
+
+```bash
+npm i @aws-sdk/client-dynamodb
+# added 83 packages, and audited 163 packages in 13s
+# 14 packages are looking for funding
+#   run `npm fund` for details
+# found 0 vulnerabilities
+```
+
+node_modules/ is now 9,505,094 bytes (22.1 MB on disk) for 4,711 items.
+

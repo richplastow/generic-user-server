@@ -191,6 +191,11 @@ git push
 ```
 
 I got an email shortly after "Action needed: Secrets detected in recent commits
-to richplastow/generic-user-server", which refers to the tryout-firebase.js file.
-Maybe that should be deleted??!
+to richplastow/generic-user-server", which refers to the tryout-firebase.js file -
+I deleted that.
 
+I also got a "Deploy to Firebase Hosting on merge: All jobs have failed" message.
+After clicking ‘View workflow run’, I saw `npm ERR! Missing script: "build"`.
+
+I added `"build": "echo 'TODO build script'",` to the `"scripts"` object of
+package.json. The next time I pushed 

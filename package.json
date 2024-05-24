@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "build": "echo 'TODO build script'",
     "test": "node run-tests.js"
   },
   "author": "Rich Plastow",

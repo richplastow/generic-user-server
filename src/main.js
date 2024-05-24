@@ -16,9 +16,7 @@ export class GenericUserServer {
             ...domains.map(domain => ({ // then use generated, eg GET /domain/foo
                 method: 'get',
                 path: `/domain/${domain}`,
-                handler: (_req, res) => {
-                    res.json({ result: 'ok'});
-                },        
+                handler: (_req, res) => res.json({ result: 'ok' }),
             })),
         ];
 

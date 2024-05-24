@@ -43,19 +43,22 @@ npm i jsonwebtoken
 # found 0 vulnerabilities
 ```
 
-node_modules/ is now 3,032,842 bytes (5 MB on disk) for 766 items.
+node_modules/ is now 3,071,766 bytes (5 MB on disk) for 769 items.
 
-## @aws-sdk/client-dynamodb
+## firebase
 
 AWS SDK for JavaScript DynamoDB Client for Node.js, Browser and React Native.
 
 ```bash
-npm i @aws-sdk/client-dynamodb
-# added 83 packages, and audited 163 packages in 13s
+npm i firebase
+# added 85 packages, and audited 165 packages in 22s
 # 14 packages are looking for funding
 #   run `npm fund` for details
 # found 0 vulnerabilities
 ```
 
-node_modules/ is now 9,505,094 bytes (22.1 MB on disk) for 4,711 items.
+node_modules/ is now 115,370,269 bytes (146.3 MB on disk) for 13,596 items.
+
+> Note that `npm i @aws-sdk/client-dynamodb` would have been considerably
+> smaller: 9,505,094 bytes (22.1 MB on disk) for 4,711 items.
 

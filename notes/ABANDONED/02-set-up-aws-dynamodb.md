@@ -170,7 +170,7 @@ password’. Paste it into a text document, eg:
 
 ```
 AWS access portal URL: https://d-99677dc1f5.awsapps.com/start, Username: 
-generic-user-server-user, One-time password: wPH*KZjo*_Gv0/nctMm2$#5b#x*ugq6D1n
+generic-user-server-user, One-time password: `wPH*KZjo*_Gv0`/nctMm2$#5b#x*ugq6D1n
 ```
 
 Click ‘Close’.

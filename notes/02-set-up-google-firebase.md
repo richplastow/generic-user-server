@@ -126,5 +126,71 @@ git add .
 git status
 # ...
 git commit -am 'Adds initial Firebase g-u-s app'
+# [main 5b60d11] Adds initial Firebase g-u-s app
+#  15 files changed, 1061 insertions(+), 1045 deletions(-)
+#  create mode 100644 .firebaserc
+#  create mode 100644 .github/workflows/firebase-hosting-merge.yml
+#  create mode 100644 .github/workflows/firebase-hosting-pull-request.yml
+#  create mode 100644 database.rules.json
+#  create mode 100644 firebase.json
+#  create mode 100644 notes/02-set-up-google-firebase.md
+#  rename notes/{ => ABANDONED}/02-set-up-aws-dynamodb.md (98%)
+#  create mode 100644 notes/TODO/03-set-up-cloud-firestore.md
+#  create mode 100644 public/index.html
+#  create mode 100644 tryout-firebase.js
 git push
+# Enumerating objects: 32, done.
+# Counting objects: 100% (32/32), done.
+# Delta compression using up to 4 threads
+# Compressing objects: 100% (22/22), done.
+# Writing objects: 100% (24/24), 20.17 KiB | 4.03 MiB/s, done.
+# Total 24 (delta 6), reused 0 (delta 0), pack-reused 0
+# remote: Resolving deltas: 100% (6/6), completed with 5 local objects.
+# To https://github.com/<GH_USER>/generic-user-server.git
+#  ! [remote rejected] main -> main (refusing to allow a Personal Access Token to create or update workflow `.github/workflows/firebase-hosting-merge.yml` without `workflow` scope)
+# error: failed to push some refs to 'https://github.com/<GH_USER>/generic-user-server.git'
 ```
+
+## Add the 'workflow' scope to your Mac's GitHub PAT
+
+Based on:
+1. <https://github.com/orgs/community/discussions/26254#discussioncomment-6101339>
+2. <https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens>
+3. <https://gist.github.com/jonjack/bf295d4170edeb00e96fb158f9b1ba3c>
+
+- In GitHub, click your profile photo, then click ‘Settings’
+- In the left sidebar, click ‘Developer settings’ (the last item)
+- In the left sidebar, click ‘Personal access tokens’ and the ‘Tokens (classic)’
+- Click ‘Generate new token’ and ‘Generate new token (classic)’
+- Note: `My MacBook PAT 24th May 2024 for 1 year with workflow`
+- Expiration: one year in the future
+- Tick ‘repo’ (its 6 sub-items will tick too)
+- Tick ‘workflow’
+- Click ‘Generate token’
+- Copy-paste the new token into a secure encrypted password app, eg Buttercup
+- Click ‘Delete’ next to the PAT token your were previously using for the MacBook
+- Run `git credential-osxkeychain erase`
+- `host=github.com` and hit return
+- `protocol=https` and hit return __*twice*__
+
+```bash
+git push
+# Username for 'https://github.com':
+<GH_USER>
+# Password for 'https://richplastow@github.com':
+<THE_NEW_PAT>
+# Enumerating objects: 32, done.
+# Counting objects: 100% (32/32), done.
+# Delta compression using up to 4 threads
+# Compressing objects: 100% (22/22), done.
+# Writing objects: 100% (24/24), 20.17 KiB | 4.03 MiB/s, done.
+# Total 24 (delta 6), reused 0 (delta 0), pack-reused 0
+# remote: Resolving deltas: 100% (6/6), completed with 5 local objects.
+# To https://github.com/<GH_USER>/generic-user-server.git
+#    f013da1..5b60d11  main -> main
+```
+
+I got an email shortly after "Action needed: Secrets detected in recent commits
+to richplastow/generic-user-server", which refers to the tryout-firebase.js file.
+Maybe that should be deleted??!
+

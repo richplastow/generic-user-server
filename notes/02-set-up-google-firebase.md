@@ -74,16 +74,11 @@ which confirms that Spark $0/month is your current plan.
 - ‘Firebase CLI wants to access your Google Account’, click ‘Allow’
 - You should see ‘Woohoo! Firebase CLI Login Successful’ - close this window
 - Back on the command line, you should see ‘✔  Success! Logged in as ...’
-- Run `firebase init` and use the space key to select two features...
-- Select `Realtime Database: Configure a security rules file for Realtime...`
-- Select `Hosting: Configure files for Firebase Hosting and (optionally) set...`
+- Run `firebase init` and use the space key to select
+  `Hosting: Configure files for Firebase Hosting and (optionally) set...`
 - Hit the return key
 - Select `Use an existing project` and hit return 
 - Select `generic-user-server`, hit return, and wait for about 10 seconds
-- ? It seems like ... Realtime Database ... set it up?: `y`
-- Choose your nearest location, eg `europe-west1`
-- ? What file ... Realtime Database Security Rules?: hit return for the default, 
-  `database.rules.json`
 - ? What do you want to use as your public directory?: hit return for the
   default, `public`
 - ? Configure as a single-page app (rewrite all urls to /index.html)?: `y`
@@ -105,14 +100,13 @@ which confirms that Spark $0/month is your current plan.
 
 ## Deploy the Firebase app for the first time
 
-You should see six new files in the repo:
+You should see five new files in the repo:
 
 ```
 .github/workflows/firebase-hosting-merge.yml
 .github/workflows/firebase-hosting-pull-request.yml
 public/index.html
 .firebaserc
-database.rules.json
 firebase.json
 ```
 
@@ -131,7 +125,6 @@ git commit -am 'Adds initial Firebase g-u-s app'
 #  create mode 100644 .firebaserc
 #  create mode 100644 .github/workflows/firebase-hosting-merge.yml
 #  create mode 100644 .github/workflows/firebase-hosting-pull-request.yml
-#  create mode 100644 database.rules.json
 #  create mode 100644 firebase.json
 #  create mode 100644 notes/02-set-up-google-firebase.md
 #  rename notes/{ => ABANDONED}/02-set-up-aws-dynamodb.md (98%)
@@ -198,4 +191,10 @@ I also got a "Deploy to Firebase Hosting on merge: All jobs have failed" message
 After clicking ‘View workflow run’, I saw `npm ERR! Missing script: "build"`.
 
 I added `"build": "echo 'TODO build script'",` to the `"scripts"` object of
-package.json. The next time I pushed 
+package.json. The next time I pushed
+<https://github.com/GH_USER/generic-user-server/actions> showed success.
+
+Visit <https://g-u-s.web.app/> - you should see ‘GUS Setup Complete’, which
+shows that deployment worked.
+
+Back at <https://console.firebase.google.com/>, click ‘Continue to console’.

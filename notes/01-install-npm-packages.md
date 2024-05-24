@@ -47,8 +47,6 @@ node_modules/ is now 3,071,766 bytes (5 MB on disk) for 769 items.
 
 ## firebase
 
-AWS SDK for JavaScript DynamoDB Client for Node.js, Browser and React Native.
-
 ```bash
 npm i firebase
 # added 85 packages, and audited 165 packages in 22s
@@ -62,3 +60,14 @@ node_modules/ is now 115,370,269 bytes (146.3 MB on disk) for 13,596 items.
 > Note that `npm i @aws-sdk/client-dynamodb` would have been considerably
 > smaller: 9,505,094 bytes (22.1 MB on disk) for 4,711 items.
 
+## firebase-admin
+
+```bash
+npm i firebase-admin
+# added 126 packages, and audited 291 packages in 10s
+# 30 packages are looking for funding
+#   run `npm fund` for details
+# found 0 vulnerabilities
+```
+
+node_modules/ is now 136,749,311 bytes (174.7 MB on disk) for 16,731 items

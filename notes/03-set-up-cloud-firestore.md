@@ -1,4 +1,4 @@
-# Step 2: Set up Cloud Firestore
+# Step 3: Set up Cloud Firestore
 
 [^ Notes](./00-notes.md)
 

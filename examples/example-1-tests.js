@@ -6,6 +6,10 @@ export const example1CurlTests = [
         [res.http200ok, res.jsonContentType, '< X-Powered-By: Express', '{"result":"ok"}'],
     ],
     [
+        [`-v`, `${req.origin}/is-using-mock-db`],
+        [res.http200ok, res.jsonContentType, '{"result":true}'],
+    ],
+    [
         [`-v`, `${req.origin}/domains`],
         [res.http200ok, res.jsonContentType, '{"result":["tunefields"]}'],
     ],

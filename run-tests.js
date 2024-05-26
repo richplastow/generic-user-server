@@ -5,11 +5,14 @@ import { example1CurlTests } from './examples/example-1-tests.js';
 let example1;
 const example1Errors = [];
 try {
+
+    // Note that these tests do not specify a GUS_FIRESTORE_JSON_KEY environment
+    // variable, so 'example-1.js' will use `getMockFirestore(mockCollections)`.
     const example1 = spawn('node', ['examples/example-1.js']);
 
     example1.stdout.on('data', actual => {
         const acTrim = actual.toString().trim();
-        const expected = 'example-1 listening on port 1234';
+        const expected = 'GUS example-1, DB mock, PORT 1234';
         if (acTrim !== expected) {
             example1Errors.push(`stdout "${acTrim}" not "${expected}"`);
         } else {

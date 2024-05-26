@@ -45,6 +45,13 @@ export class GenericUserServer {
     }
 
     async initialise() {
+        // Before setting up the Express server, give the Firestore SDK an
+        // opportunity to throw an exception if it cannot use our Firestore,
+        // or if the mandatory 'gus_insts_daily' collection does not exist.
+        const collections = await this.firestore.listCollections();
+        if (!collections.find(({ id }) => id === 'gus_insts_daily')) throw Error(
+            `No 'gus_insts_daily' collection`);
+
         this.endpoints.forEach(({ method, path, handler }) => {
             this.server[method](path, (req, res) => handler(req, res, this));
         });
@@ -56,14 +63,30 @@ export class GenericUserServer {
         });
 
         this.server.listen(this.port, () => {
-            console.log(`${this.gusName} listening on port ${this.port}`);
+            console.log(`GUS ${this.gusName}, DB ${this.firestore.databaseId}, PORT ${this.port}`);
+        });
+
+        // Check that every '*_users' collection has an admin. Also, add any
+        // missing '*_users' collections.
+        this.domains.forEach(async domain => {
+            const collName = `${domain}_users`;
+            const hasColl = collections.find(({ id }) => id === collName);
+            const adminDocRef = this.firestore.doc(`${collName}/admin`);
+            if (hasColl) {
+                const adminDoc = await adminDocRef.get();
+                if (!adminDoc.exists) throw Error(
+                    `${collName} has no admin`);
+                if (!adminDoc.get('isAdmin')) throw Error(
+                    `${collName}/admin isAdmin is falsey`);
+                return; // the admin user seems ok for this domain
+            }
+            await adminDocRef.set({ // TODO pwHash and pwSalt
+                isAdmin: true,
+            });
         });
 
         // Record to the Firestore database that this GUS instance was
         // successfully initialised.
-        const collections = await this.firestore.listCollections();
-        if (!collections.find(({ id }) => id === 'gus_insts_daily')) throw Error(
-            `No 'gus_insts_daily' collection`);
         const document = this.firestore.doc(
             `gus_insts_daily/${(new Date()).toISOString().slice(0, 10)}_${this.constructedID}`
         );

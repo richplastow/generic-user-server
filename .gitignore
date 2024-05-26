@@ -28,3 +28,4 @@ Thumbs.db
 
 # Private
 generic-user-server-*.json
+tmp_GUS_FIRESTORE_JSON_KEY_*.json

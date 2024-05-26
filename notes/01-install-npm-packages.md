@@ -43,31 +43,19 @@ npm i jsonwebtoken
 # found 0 vulnerabilities
 ```
 
-node_modules/ is now 3,071,766 bytes (5 MB on disk) for 769 items.
+node_modules/ is now 3,149,614 bytes (5.1 MB on disk) for 779 items
 
-## firebase
+## @google-cloud/firestore
 
 ```bash
-npm i firebase
-# added 85 packages, and audited 165 packages in 22s
-# 14 packages are looking for funding
+npm i @google-cloud/firestore
+# added 95 packages, and audited 175 packages in 11s
+# 18 packages are looking for funding
 #   run `npm fund` for details
 # found 0 vulnerabilities
 ```
 
-node_modules/ is now 115,370,269 bytes (146.3 MB on disk) for 13,596 items.
+node_modules/ is now 22,794,900 bytes (29.7 MB on disk) for 2,988 items
 
-> Note that `npm i @aws-sdk/client-dynamodb` would have been considerably
-> smaller: 9,505,094 bytes (22.1 MB on disk) for 4,711 items.
-
-## firebase-admin
-
-```bash
-npm i firebase-admin
-# added 126 packages, and audited 291 packages in 10s
-# 30 packages are looking for funding
-#   run `npm fund` for details
-# found 0 vulnerabilities
-```
-
-node_modules/ is now 136,749,311 bytes (174.7 MB on disk) for 16,731 items
+> Note that `npm i firebase` or `npm i firebase-admin` would both have been
+> bigger, at ~140 MB and ~28 MB respectively.

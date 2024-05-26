@@ -1,6 +1,7 @@
 import { GenericUserServer } from '../index.js';
+import { getFirestore } from '../src/utils/get-firestore.js';
 
-const endpoints = [
+const customEndpoints = [
     {
         method: 'get',
         path: '/domains',
@@ -18,8 +19,10 @@ const endpoints = [
 ];
 
 const example1 = new GenericUserServer({
+    customEndpoints,
     domains: ['tunefields'],
-    endpoints,
+    firestore: getFirestore(),
     gusName: 'example-1',
+    isExample: true,
 });
-example1.initialise();
+await example1.initialise();

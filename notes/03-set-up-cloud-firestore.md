@@ -13,15 +13,6 @@ It will probably supersede Google's older Realtime Database soon.
 
 <https://firebase.google.com/docs/firestore>
 
-## Generate a salt, and an MD4 hash of a password
-
-On MacOS:
-
-```bash
-echo "my_pass+my_salt" | openssl sha1
-6c675ef13bf25dcdfe96d560265fa1b01417ed95
-```
-
 ## Create a Firestore database, collection and document
 
 Visit <https://console.firebase.google.com/project/generic-user-server/> and
@@ -35,17 +26,15 @@ click ‘Create database’.
 - After a few seconds, you should see the ‘Cloud Firestore’ console
 - Click ‘+ Start Collection’
 - Parent path: `/` (cannot change this)
-- Collection ID: `users`
+- Collection ID: `gus_insts_daily`
 - Click ‘Next’
-- Document ID: `admin`
-- Field: `pwSha1`
-- Type: `string`
-- Value: `6c675ef13bf25dcdfe96d560265fa1b01417ed95`
-- Click ‘+ Add field’
-- Field: `pwSalt`
-- Type: `string`
-- Value: `my_salt`
+- Document ID: `example`
+- Field: `isExample`
+- Type: `boolean`
+- Value: `true`
 - Click ‘Save’
+- Click the ‘Rules’ tab
+- __IMPORTANT:__ Change `if false;` to `if request.auth != null;`
 
 ## Create a service account to use the database, and get its key JSON file
 
@@ -58,18 +47,7 @@ on the ‘Node.js’ tab of ‘Initialize Cloud Firestore’, and scrolling to
 > _the Google Cloud console. Generate a new private key and save the JSON file._
 > _Then use the file to initialize the SDK:_
 
-```js
-const { initializeApp, applicationDefault, cert } = require('firebase-admin/app');
-const { getFirestore, Timestamp, FieldValue, Filter } = require('firebase-admin/firestore');
-
-const serviceAccount = require('./path/to/serviceAccountKey.json');
-
-initializeApp({
-    credential: cert(serviceAccount)
-});
-
-const db = getFirestore();
-```
+__I could not get the sample code to work - see below for a working version.__
 
 Visit <https://console.cloud.google.com/iam-admin/serviceaccounts>, choose
 your country, tick the ‘Terms of Service’ and ‘Email updates’ checkboxes, and
@@ -83,53 +61,49 @@ Click ‘+ CREATE SERVICE ACCOUNT’ at the top of the page.
 
 - Service account name: `Generic User Server NodeJS Client`
 - Service account ID: `gus-nodejs-client`
-- Service account description: `Access the generic-user-server project Firestore`
+- Service account description:
+  `Firestore read and write, for the generic-user-server project`
 - Click ‘CREATE AND CONTINUE’
-- Click ‘Select a role’ and type "Firestore" into the filter
-- Click ‘Firestore Service Agent’ and click ‘CONTINUE’ (no need for an IAM
-  condition or another role) __TODO__ I actually added Firestore admin !!!!
+- Click ‘Select a role’ and type "datastore.user" into the filter
+- Click Cloud Datastore User’ and click ‘CONTINUE’ (no need for an IAM
+  condition or another role) For a full list of Firebase roles, visit
+  <https://cloud.google.com/firestore/docs/security/iam>
 - Click ‘DONE’ (no need to grant users access to this service account)
 - You should see the new service account in the table
-- Click on its ‘Email’ link, and click the ‘Keys’ tab
-- Click ‘ADD KEY’ and ‘Create new key’
+- Click on its ‘Email’ link
+- Click the ‘KEYS’ tab, click ‘ADD KEY’ and ‘Create new key’
 - Keep ‘JSON’ selected, and click ‘CREATE’
 - You should see a ‘Private key saved to your computer’ popup, and find a JSON
-  file named generic-user-server-abcdef123456.json downloaded to your browser's
-  default ‘Downloads’ folder
+  file named something like generic-user-server-abcdef123456.json downloaded to
+  your browser's default ‘Downloads’ folder
 - Move that JSON file to the root of the `generic-user-server` repo
 - Add its filename to .gitignore so that it doesn't accidentally get published
   or distributed if the repo origin is forked or made public
 
 ## Read the database using a Node.js app running on your local machine
 
-Create a file called firestore-tryout.js and paste in:
+Read through and understand the tryout-firestore.js script. It's quite well
+commented! This lets you check that the Firestore database and your JSON key are
+working as expected.
 
-```js
-import { initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-
-import serviceAccount from './generic-user-server-b1e5cdda35e0.json' assert { type: 'json' };
-
-initializeApp(serviceAccount);
-
-const db = getFirestore();
-
-const adminUserRef = db.collection('users').doc('admin');
-const doc = await adminUserRef.get();
-if (!doc.exists) {
-  console.log('No such document!');
-} else {
-  console.log('Document data:', doc.data());
-}
-```
+Use this node one-liner to minify the JSON key downloaded above (replace
+'abcdef123456' to match your key's filename):
 
 ```bash
-GOOGLE_APPLICATION_CREDENTIALS="generic-user-server-b1e5cdda35e0.json" node firestore-tryout.js
-# (node:78680) ExperimentalWarning: Import assertions are not a stable feature of the JavaScript ...
-# (Use `node --trace-warnings ...` to show where the warning was created)
-# (node:78680) ExperimentalWarning: Importing JSON modules is an experimental feature and might change at any time
-# Document data: {
-#   pwSha1: '6c675ef13bf25dcdfe96d560265fa1b01417ed95',
-#   pwSalt: 'my_salt'
-# }
+node -e "console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('generic-user-server-abcdef123456.json')+'')))"
+# {"type":"service_account","project_id":"generic-user-server","private_key_id":
+# ...
+# ,"universe_domain":"googleapis.com"}
+```
+
+Copy the minified JSON between `{"type":"se ...` and `ain":"googleapis.com"}`.
+It has no newlines, which will make it easier to use as an environment variable.
+
+```bash
+GUS_FIRESTORE_JSON_KEY='{"type":"servi ... eapis.com"}' node tryout-firestore.js
+# createTime: '2024-05-26T19:56:21.286Z'
+# id: 'example'
+# updateTime: '2024-05-26T19:56:21.286Z'
+# data(): '{"isExample":true}'
+# doc.get('isExample'): true
 ```

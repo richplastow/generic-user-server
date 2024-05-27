@@ -1,10 +1,13 @@
+import { Timestamp } from '@google-cloud/firestore';
 import express from 'express';
 
 import { defaultEndpoints } from './default-endpoints.js';
-import { Timestamp } from '@google-cloud/firestore';
+import { logIn } from './utils/log-in.js';
 
 export class GenericUserServer {
     constructor({
+        adminPwHash,
+        adminPwSalt,
         customEndpoints,
         domains,
         firestore,
@@ -29,8 +32,31 @@ export class GenericUserServer {
                 path: `/domain/${domain}`,
                 handler: (_req, res) => res.json({ result: 'ok' }),
             })),
+            ...domains.map(domain => ({ // then use generated, eg GET /domain/foo
+                method: 'post',
+                path: `/domain/${domain}/log-in`,
+                handler: async (req, res) => {
+                    let result, statusCode;
+                    try {
+                        result = await logIn(this.firestore, req.body, `${domain}_users`);
+                        statusCode = 200;
+                        const { sessionCookieUsername, sessionCookieUuid } = result;
+                        res.setHeader('Set-Cookie', [
+                            `sessionCookieUsername=${sessionCookieUsername}`,
+                            `sessionCookieUuid=${sessionCookieUuid}`,
+                        ]);
+                    } catch (err) {
+                        result = { error: err.message };
+                        statusCode = 400;
+                    }
+                    res.status(statusCode);
+                    res.json(result);
+                },
+            })),
         ];
 
+        this.adminPwHash = adminPwHash;
+        this.adminPwSalt = adminPwSalt;
         this.domains = domains || [];
         this.endpoints = generatedEndpoints;
         this.firestore = firestore;
@@ -57,7 +83,8 @@ export class GenericUserServer {
         });
 
         // Respond with a 404 Not Found error if no route matches the request.
-        this.server.use(function(req, res, next) {
+        // TODO -X post response is blank?
+        this.server.use(function(req, res, _next) {
             res.status(404);
             res.json({ error: 'Not Found' });
         });
@@ -80,8 +107,10 @@ export class GenericUserServer {
                     `${collName}/admin isAdmin is falsey`);
                 return; // the admin user seems ok for this domain
             }
-            await adminDocRef.set({ // TODO pwHash and pwSalt
+            await adminDocRef.set({
                 isAdmin: true,
+                pwHash: this.adminPwHash,
+                pwSalt: this.adminPwSalt,
             });
         });
 

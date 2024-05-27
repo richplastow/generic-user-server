@@ -14,8 +14,13 @@ export const getMockFirestore = (collections = []) => {
             return {
                 get() {
                     return {
+                        data() { return doc }, // TODO deep clone would be better
                         exists: !!doc,
-                        get(key) { return doc[key] }
+                        get(key) { return doc[key] },
+                        update(data) {
+                            Object.entries(data)
+                                .forEach(([ key, val ]) => doc[key] = val)
+                        },
                     }
                 },
                 set(newDoc) {

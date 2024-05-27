@@ -34,11 +34,15 @@ const mockCollections = [
         id: 'tunefields_users',
         admin: {
             isAdmin: true,
+            pwHash: '2aa04e2e4fd0d86d5f4cf5063e671ec8',
+            pwSalt: 'my_salt',
         }
     },
 ];
 
 const example1 = new GenericUserServer({
+    adminPwHash: process.env.GUS_PW_HASH || '2aa04e2e4fd0d86d5f4cf5063e671ec8',
+    adminPwSalt: process.env.GUS_PW_SALT || 'my_salt',
     customEndpoints,
     domains: ['tunefields'],
     firestore: process.env.GUS_FIRESTORE_JSON_KEY
@@ -47,3 +51,5 @@ const example1 = new GenericUserServer({
     isExample: true,
 });
 await example1.initialise();
+
+setTimeout(() => console.log(mockCollections), 10000);

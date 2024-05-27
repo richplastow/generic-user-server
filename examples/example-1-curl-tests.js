@@ -1,13 +1,15 @@
-import { commonRequestLines as req, commonResponseLines as res } from './common-lines.js';
+import {
+    commonRequestLines as req,
+    commonResponseLines as res,
+} from '../tests/utils/common-lines.js';
+
+// Tells run-tests.js to run `node examples/example-1.js` as a sub process.
+export const example1SubProcessPath = 'examples/example-1.js';
 
 export const example1CurlTests = [
     [
-        [`-v`, `${req.origin}/`],
-        [res.http200ok, res.jsonContentType, '< X-Powered-By: Express', '{"result":"ok"}'],
-    ],
-    [
         [`-v`, `${req.origin}/is-using-mock-db`],
-        [res.http200ok, res.jsonContentType, '{"result":true}'],
+        [res.http200ok, res.jsonContentType, '< X-Powered-By: Express', '{"result":true}'],
     ],
     [
         [`-v`, `${req.origin}/domains`],

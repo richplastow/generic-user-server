@@ -15,6 +15,14 @@ a Google Firestore database.
 - Can send emails to confirm sign-up, or to reset passwords
 - Provides CRUD for app-usage statistics
 
+## Top-level endpoints
+
+__`GET /`__
+
+Responds with just two bytes, `ok`. All other endpoints use `application/json`
+for their response `Content-Type`, but this endpoint uses `text/plain` instead.
+Useful for AWS App Runner to 'ping' every 20 seconds, to show the app's running.
+
 ## Running the examples
 
 The simple way to run the examples is:

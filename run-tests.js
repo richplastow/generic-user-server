@@ -1,65 +1,91 @@
 import { spawn, spawnSync } from 'node:child_process';
 
-import { example1CurlTests } from './examples/example-1-tests.js';
+import { example1CurlTests, example1SubProcessPath } from './examples/example-1-curl-tests.js';
+import { topLevelCurlTests, topLevelSubProcessPath } from './tests/top-level-curl-tests.js';
 
-let example1;
-const example1Errors = [];
-try {
+const testSuites = [
+    [ 'example-1', 'example-1', example1CurlTests, example1SubProcessPath ],
+    [ 'top-level', 'vanilla-gus', topLevelCurlTests, topLevelSubProcessPath ],
+];
 
-    // Note that these tests do not specify a GUS_FIRESTORE_JSON_KEY environment
-    // variable, so 'example-1.js' will use `getMockFirestore(mockCollections)`.
-    const example1 = spawn('node', ['examples/example-1.js']);
+let subProcess;
+let errors = [];
 
-    example1.stdout.on('data', actual => {
-        const acTrim = actual.toString().trim();
-        const expected = 'GUS example-1, DB mock, PORT 1234';
-        if (acTrim !== expected) {
-            example1Errors.push(`stdout "${acTrim}" not "${expected}"`);
-        } else {
-            example1CurlTests.forEach(([args, expectedResults]) => {
-                const { stdout, stderr, status } = spawnSync('curl', args);
-                if (status !== 0) {
-                    example1Errors.push(`status ${status} not 0 for:\n    curl '${args.join("' '")}'`);
-                    return; // skip to the next curl test
-                }
-                // curl may send its verbose output to stderr. Cover all bases
-                // by concatenating stdout and stderr into out string.
-                const allOutput = `${stderr}\n${stdout}`.split('\n').map(l => l.trim());
-                expectedResults.forEach(expectedResult => {
-                    const expTrim = expectedResult.trim();
-                    if (!allOutput.includes(expTrim)) {
-                        example1Errors.push(`Expected result "${expTrim
-                            }" not found in stderr or stdout of:\n    curl '${args.join("' '")}'`);
+const slowResolvingCurlTest = async testSuite => new Promise((resolve, reject) => {
+    const [ testSuiteName, gusName, curlTests, subProcessPath ] = testSuite;
+
+    try {
+        // Note that these tests do not specify a GUS_FIRESTORE_JSON_KEY environment
+        // variable, so 'example-1.js' will use `getMockFirestore(mockCollections)`.
+        subProcess = spawn('node', [subProcessPath]);
+
+        subProcess.stdout.on('data', actual => {
+            const acTrim = actual.toString().trim();
+            const expected = `GUS ${gusName}, DB mock, PORT 1234`;
+            if (acTrim !== expected) {
+                errors.push(`${testSuiteName}: stdout "${acTrim}" not "${expected}"`);
+            } else {
+                curlTests.forEach(([args, expectedResults]) => {
+                    const { stdout, stderr, status } = spawnSync('curl', args);
+                    if (status !== 0) {
+                        errors.push(`${testSuiteName}: status ${status
+                            } not 0 for:\n    curl '${args.join("' '")}'`);
+                        return; // skip to the next curl test
                     }
-                });
-                // console.log('\n\n\n\n', args, ':\n');
-                // console.log('allOutput:', allOutput, '\n\n');
-            });    
-        }
+                    // curl may send its verbose output to stderr. Cover all bases
+                    // by concatenating stdout and stderr into out string.
+                    const allOutput = `${stderr}\n${stdout}`.split('\n').map(l => l.trim());
+                    expectedResults.forEach(expectedResult => {
+                        const expTrim = expectedResult.trim();
+                        if (!allOutput.includes(expTrim)) {
+                            errors.push(`${testSuiteName}: Expected result "${expTrim
+                                }" not found in stderr or stdout of:\n    curl '${args.join("' '")}'`);
+                        }
+                    });
+                    // console.log('\n\n\n\n', args, ':\n');
+                    // console.log('allOutput:', allOutput, '\n\n');
+                });    
+            }
+            subProcess.kill('SIGINT'); // equivalent to ctrl-c
+        });
 
-        example1.kill('SIGINT'); // equivalent to ctrl-c
-    });
-    
-    example1.stderr.on('data', errorMessage => {
-        example1Errors.push(`Unexpected stderr "${errorMessage}"`);
-    });
-    
-    example1.on('close', code => {
-        if (code !== null) {
-            example1Errors.push(`code ${code} not null`);
-        }
-        showTestResults();
-    });
-    
-} catch(err) {
-    example1Errors.push(`Unexpected exception: "${err.message}"`);
-    example1.kill('SIGINT'); // make sure the process stops, and free-up port 1234
-    showTestResults();
-}
+        subProcess.stderr.on('data', errorMessage => {
+            errors.push(`${testSuiteName}: Unexpected stderr "${errorMessage}"`);
+        });
 
-function showTestResults() {
-    if (example1Errors.length)
-        console.error(`${example1Errors.length} error(s):\n`, example1Errors.join('\n'));
-    else
-        console.log('All tests passed');    
+        subProcess.on('close', code => {
+            if (code !== null) {
+                errors.push(`${testSuiteName}: code ${code} not null`);
+            }
+            showTestResults(testSuiteName, resolve);
+        });
+
+    } catch(err) {
+        errors.push(`${testSuiteName}: Unexpected exception: "${err.message}"`);
+        subProcess.kill('SIGINT'); // make sure the process stops, and free-up port 1234
+        showTestResults(testSuiteName, reject);
+    }
+});
+
+
+// Run each test suite, one after another.
+// By the way, `testSuites.forEach()` would not be able to wait for each test
+// suite to complete, like `for (const testSuite of testSuites) { ... }` can.
+for (const testSuite of testSuites) {
+    const startTime = new Date().valueOf();
+    const testSuiteName = testSuite[0];
+    console.log(`${testSuiteName}: Starting test suite`);
+    await slowResolvingCurlTest(testSuite);
+    const duration = new Date() - startTime;
+    console.log(`${testSuiteName}: Completed after ${duration}ms\n`);
+};
+
+function showTestResults(testSuiteName, resolveOrReject) {
+    if (errors.length) {
+        console.error(`${testSuiteName}: ${errors.length} error(s):\n` + errors.join('\n'));
+    } else {
+        console.log(`${testSuiteName}: All tests passed`);    
+    }
+    errors = [];
+    resolveOrReject();
 }

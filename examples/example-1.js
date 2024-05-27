@@ -51,5 +51,3 @@ const example1 = new GenericUserServer({
     isExample: true,
 });
 await example1.initialise();
-
-setTimeout(() => console.log(mockCollections), 10000);

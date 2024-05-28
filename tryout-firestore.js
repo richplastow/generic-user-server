@@ -7,7 +7,7 @@ import { getFirestore } from './src/utils/get-firestore.js';
 async function tryoutFirestore(firestore) {
     // Obtain a document reference.
     // <https://cloud.google.com/nodejs/docs/reference/firestore/latest/firestore/documentreference>
-    const document = firestore.doc('gus_insts_daily/example');
+    const document = firestore.doc('gus_daily_reports/example');
 
     // Enter new data into the document.
     // await document.set({

@@ -1,10 +1,14 @@
 import { spawn, spawnSync } from 'node:child_process';
 
 import { example1CurlTests, example1SubProcessPath } from './examples/example-1-curl-tests.js';
+import { getUserCurlTests, getUserSubProcessPath } from './src/utils-tests/get-user-curl-tests.js';
+import { logInCurlTests, logInSubProcessPath } from './src/utils-tests/log-in-curl-tests.js';
 import { topLevelCurlTests, topLevelSubProcessPath } from './tests/top-level-curl-tests.js';
 
 const testSuites = [
     [ 'example-1', 'example-1', example1CurlTests, example1SubProcessPath ],
+    [ 'getUser()', 'vanilla-gus', getUserCurlTests, getUserSubProcessPath ],
+    [ 'logIn()', 'vanilla-gus', logInCurlTests, logInSubProcessPath ],
     [ 'top-level', 'vanilla-gus', topLevelCurlTests, topLevelSubProcessPath ],
 ];
 
@@ -21,7 +25,7 @@ const slowResolvingCurlTest = async testSuite => new Promise((resolve, reject) =
 
         subProcess.stdout.on('data', actual => {
             const acTrim = actual.toString().trim();
-            const expected = `GUS ${gusName}, DB mock, PORT 1234`;
+            const expected = `GUS ${gusName}, DB gus-mock-firestore, PORT 1234`;
             if (acTrim !== expected) {
                 errors.push(`${testSuiteName}: stdout "${acTrim}" not "${expected}"`);
             } else {
@@ -36,10 +40,18 @@ const slowResolvingCurlTest = async testSuite => new Promise((resolve, reject) =
                     // by concatenating stdout and stderr into out string.
                     const allOutput = `${stderr}\n${stdout}`.split('\n').map(l => l.trim());
                     expectedResults.forEach(expectedResult => {
-                        const expTrim = expectedResult.trim();
-                        if (!allOutput.includes(expTrim)) {
-                            errors.push(`${testSuiteName}: Expected result "${expTrim
-                                }" not found in stderr or stdout of:\n    curl '${args.join("' '")}'`);
+                        if (expectedResult instanceof RegExp) {
+                            if (!allOutput.some(line => expectedResult.test(line))) {
+                                errors.push(`${testSuiteName}: Expected ${expectedResult
+                                    } to pass a stderr or stdout line of:\n    curl '${args.join("' '")}'`);
+                            }    
+                        } else {
+                            const expectedStr = typeof expectedResult === 'object'
+                                ? JSON.stringify(expectedResult) : expectedResult.trim();
+                            if (!allOutput.includes(expectedStr)) {
+                                errors.push(`${testSuiteName}: Expected result "${expectedStr
+                                    }" not found in stderr or stdout of:\n    curl '${args.join("' '")}'`);
+                            }    
                         }
                     });
                     // console.log('\n\n\n\n', args, ':\n');

@@ -23,6 +23,24 @@ Responds with just two bytes, `ok`. All other endpoints use `application/json`
 for their response `Content-Type`, but this endpoint uses `text/plain` instead.
 Useful for AWS App Runner to 'ping' every 20 seconds, to show the app's running.
 
+__`POST /log-in`__
+
+Whereas `POST /foo/log-in` logs admins and regular users in to the ‘foo’ domain,
+`POST /log-in` logs super-administrators into the generic-user-server instance.
+
+__`GET /domains`__
+
+Responds with an array of domain names. Can only be accessed by superadmins.
+
+__`GET /is-using-mock-db`__
+
+Responds with `{"result":true}` if the object returned by `getMockFirestore()`
+is being used. Responds with a 404 `{"error":"Not Found"}` if the real Firestore
+SDK returned by `getFirestore()`. Can be accessed by anonymous users.
+
+> __IMPORTANT:__ A live production server should __*never*__ use the mock
+> firestore — it's only intended for testing and offline development.
+
 ## Running the examples
 
 The simple way to run the examples is:
@@ -64,5 +82,14 @@ GUS_FIRESTORE_JSON_KEY='{"type":"servi ... eapis.com"}' node examples/example-1.
 
 ```bash
 curl http://localhost:1234/is-using-mock-db
-# {"result":false}
+# {"error":"Not Found"}
+```
+
+That result means that a real Firestore database is being used.
+
+```bash
+curl -v -H 'Content-Type: application/json' -X POST -d '{"username":"superadmin","password":"my_pass"}' http://localhost:1234/log-in
+# {"result":{"message":"'superadmin' successfully logged in","sessionCookieUsername":"superadmin","sessionCookieUuid":"de83dda3-afe7-48b8-8a27-251f2277d6db"}}
+curl -v -H 'cookie: sessionCookieUsername=superadmin; sessionCookieUuid=de83dda3-afe7-48b8-8a27-251f2277d6db' http://localhost:1234/domains
+# {"result":["tunefields"]}
 ```

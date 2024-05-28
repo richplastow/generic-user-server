@@ -2,13 +2,14 @@ import { Timestamp } from '@google-cloud/firestore';
 import express from 'express';
 
 import { defaultEndpoints } from './default-endpoints.js';
+import { getUser } from './utils/get-user.js';
 import { logIn } from './utils/log-in.js';
+import { userCan } from './utils/user-can.js';
 
 export class GenericUserServer {
     constructor({
-        adminPwHash,
-        adminPwSalt,
         customEndpoints,
+        deps,
         domains,
         firestore,
         gusName,
@@ -23,22 +24,33 @@ export class GenericUserServer {
         const randomString = Math.random().toString(36).slice(2, 8);
         this.constructedID = `${isExample ? 'example' : 'server'}_${datetime}_${randomString}`;
 
+        this.domains = domains || [];
+        this.deps = deps;
+        this.firestore = firestore;
+        this.gusName = gusName || 'untitled-gus';
+        this.isExample = isExample;
+        this.port = port;
+        this.server = express();
+
         // Generate the `endpoints` array.
         const generatedEndpoints = [
             ...(customEndpoints || []), // use custom endpoints first
             ...defaultEndpoints, // then use defaults, eg GET / -> {"result":"ok"}
             ...domains.map(domain => ({ // then use generated, eg GET /domain/foo
                 method: 'get',
+                minimally: 'anon',
                 path: `/domain/${domain}`,
                 handler: (_req, res) => res.json({ result: 'ok' }),
             })),
             ...domains.map(domain => ({ // then use generated, eg GET /domain/foo
                 method: 'post',
+                minimally: 'anon',
                 path: `/domain/${domain}/log-in`,
                 handler: async (req, res) => {
-                    let result, statusCode;
+                    const { randomUUID } = this.deps;
+                    let error, result, statusCode;
                     try {
-                        result = await logIn(this.firestore, req.body, `${domain}_users`);
+                        result = await logIn({ randomUUID }, this.firestore, req.body, `${domain}_users`);
                         statusCode = 200;
                         const { sessionCookieUsername, sessionCookieUuid } = result;
                         res.setHeader('Set-Cookie', [
@@ -46,24 +58,16 @@ export class GenericUserServer {
                             `sessionCookieUuid=${sessionCookieUuid}`,
                         ]);
                     } catch (err) {
-                        result = { error: err.message };
+                        error = err.message;
                         statusCode = 400;
                     }
                     res.status(statusCode);
-                    res.json(result);
+                    res.json(error ? { error } : { result });
                 },
             })),
         ];
 
-        this.adminPwHash = adminPwHash;
-        this.adminPwSalt = adminPwSalt;
-        this.domains = domains || [];
         this.endpoints = generatedEndpoints;
-        this.firestore = firestore;
-        this.gusName = gusName || 'untitled-gus';
-        this.isExample = isExample;
-        this.port = port;
-        this.server = express();
 
         // Use express.json() - built-in middleware which parses requests with
         // JSON payloads. See <http://expressjs.com/en/4x/api.html#express.json>
@@ -73,13 +77,39 @@ export class GenericUserServer {
     async initialise() {
         // Before setting up the Express server, give the Firestore SDK an
         // opportunity to throw an exception if it cannot use our Firestore,
-        // or if the mandatory 'gus_insts_daily' collection does not exist.
+        // or if the mandatory collections do not exist.
         const collections = await this.firestore.listCollections();
-        if (!collections.find(({ id }) => id === 'gus_insts_daily')) throw Error(
-            `No 'gus_insts_daily' collection`);
+        if (!collections.find(({ id }) => id === 'gus_daily_reports')) throw Error(
+            `No 'gus_daily_reports' collection`);
+        if (!collections.find(({ id }) => id === 'gus_superadmins')) throw Error(
+            `No 'gus_superadmins' collection`);
 
-        this.endpoints.forEach(({ method, path, handler }) => {
-            this.server[method](path, (req, res) => handler(req, res, this));
+        this.endpoints.forEach(({ method, minimally, path, handler }) => {
+            const pathParts = path.split('/');
+            const [ domain, userCollectionName ] = pathParts[1] === 'domain'
+                ? [ pathParts[2], `${pathParts[2]}_users` ]
+                : [ 'TOP_LEVEL', 'gus_superadmins' ];
+            this.server[method](
+                path,
+                async (req, res) => {
+                    let user = null;
+                    if (minimally !== 'anon') {
+                        try {
+                            user = await getUser(req.headers.cookie, this.firestore, userCollectionName);
+                        } catch(err) {
+                            res.status(400);
+                            res.json({ error: `Must be logged in: ${err.message}` });
+                            return;
+                        }
+                        if (! userCan(user, minimally)) {
+                            res.status(403);
+                            res.json({ error: 'Insufficient permissions' });
+                            return;
+                        }
+                    }
+                    handler(req, res, this, user);
+                },
+            );
         });
 
         // Respond with a 404 Not Found error if no route matches the request.
@@ -109,15 +139,15 @@ export class GenericUserServer {
             }
             await adminDocRef.set({
                 isAdmin: true,
-                pwHash: this.adminPwHash,
-                pwSalt: this.adminPwSalt,
+                pwHash: 'AWAITING COMPLETION',
+                pwSalt: 'AWAITING COMPLETION',
             });
         });
 
         // Record to the Firestore database that this GUS instance was
         // successfully initialised.
         const document = this.firestore.doc(
-            `gus_insts_daily/${(new Date()).toISOString().slice(0, 10)}_${this.constructedID}`
+            `gus_daily_reports/${(new Date()).toISOString().slice(0, 10)}_${this.constructedID}`
         );
         this.initialisedAt = Timestamp.now();
         await document.set({

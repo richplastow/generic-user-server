@@ -6,7 +6,7 @@
  */
 export const getMockFirestore = (collections = []) => {
     return {
-        databaseId: 'mock',
+        databaseId: 'gus-mock-firestore',
         doc(id) {
             const [ collectionName, docId ] = id.split('/');
             let coll = collections.find(({ id }) => id === collectionName);

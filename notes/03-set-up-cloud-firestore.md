@@ -13,7 +13,21 @@ It will probably supersede Google's older Realtime Database soon.
 
 <https://firebase.google.com/docs/firestore>
 
+## Generate a hash from a salt and a password
+
+Here's how I created the `pwHash` value for the GUS top-level superadmin, using
+the salt "my_salt" and (very insecure) password "my_pass". You should make your
+own `pwHash`, based on a more hard-to-guess salt and password.
+
+```bash
+node -e "console.log(require('crypto').pbkdf2Sync('my_pass','my_salt',1000,16,'sha512').toString('hex'))"
+# 2aa04e2e4fd0d86d5f4cf5063e671ec8
+```
+
 ## Create a Firestore database, collection and document
+
+To instantiate without throwing exceptions, GenericUserServer needs collections
+named `gus_daily_reports` and `gus_superadmins` to exist in the database.
 
 Visit <https://console.firebase.google.com/project/generic-user-server/> and
 click ‘All products’ in the sidebar, bottom left. Click ‘Cloud Firestore’ and
@@ -26,12 +40,18 @@ click ‘Create database’.
 - After a few seconds, you should see the ‘Cloud Firestore’ console
 - Click ‘+ Start Collection’
 - Parent path: `/` (cannot change this)
-- Collection ID: `gus_insts_daily`
+- Collection ID: `gus_daily_reports`
 - Click ‘Next’
-- Document ID: `example`
-- Field: `isExample`
-- Type: `boolean`
-- Value: `true`
+- Document ID: `about`
+- Field: `description`
+- Type: `string`
+- Value: `Contains about 50 server reports`
+- Click ‘Save’
+- Repeat the process to create the `gus_superadmins` collection
+- Document ID: `superadmin` (or choose a harder-to-guess username)
+- Field, Type, Value: `isLoggedIn`, `boolean`, `true`
+- Field, Type, Value: `pwHash`, `string`, `2aa04e2e4fd0d86d5f4cf5063e671ec8`
+- Field, Type, Value: `pwSalt`, `string`, `my_salt`
 - Click ‘Save’
 - Click the ‘Rules’ tab
 - __IMPORTANT:__ Change `if false;` to `if request.auth != null;`

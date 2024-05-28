@@ -1,16 +1,17 @@
-import { pbkdf2Sync, webcrypto } from 'node:crypto';
+import { pbkdf2Sync } from 'node:crypto';
+import { passwordRx, usernameRx } from './regexps.js';
 
-export const logIn = async (firestore, reqBody, userCollectionName) => {
+export const logIn = async ({ randomUUID }, firestore, reqBody, userCollectionName) => {
     const { username, password } = reqBody;
 
     // Run basic validation on the data POSTed by the user.
-    if (typeof username !== 'string' || !/^[_0-9a-z]{2,16}$/.test(username)) throw Error(
-        'Invalid username. Should be a string validated by /^[_0-9a-z]{2,16}$/');
-    if (typeof password !== 'string' || !/^[_0-9a-z]{2,16}$/.test(password)) throw Error(
-        'Invalid password. Should be a string validated by /^[_0-9a-z]{2,16}$/');
+    if (typeof username !== 'string' || ! usernameRx.test(username)) throw Error(
+        'Invalid username');
+    if (typeof password !== 'string' || ! passwordRx.test(password)) throw Error(
+        'Invalid password');
     const userDocRef = firestore.doc(`${userCollectionName}/${username}`);
     const userDoc = await userDocRef.get();
-    if (!userDoc.exists) throw Error('No such username');
+    if (! userDoc.exists) throw Error('No such username');
 
     // TODO properly deal with a user logged in elsewhere
     const { isLoggedIn, pwHash, pwSalt, sessionCookieUuid } = userDoc.data();
@@ -32,10 +33,10 @@ export const logIn = async (firestore, reqBody, userCollectionName) => {
     if (postedPasswordHash !== pwHash) throw Error('Incorrect password')
 
     // Mark the user as logged-in.
-    const newSessionCookieUuid = webcrypto.randomUUID();
-    userDoc.update({
+    const newSessionCookieUuid = randomUUID();
+    await userDocRef.update({
         isLoggedIn: true,
-        sessionCookieUuid: newSessionCookieUuid ,
+        sessionCookieUuid: newSessionCookieUuid,
     });
 
     return {

@@ -170,7 +170,7 @@ Based on:
 git push
 # Username for 'https://github.com':
 <GH_USER>
-# Password for 'https://richplastow@github.com':
+# Password for 'https://<GH_USER>@github.com':
 <THE_NEW_PAT>
 # Enumerating objects: 32, done.
 # Counting objects: 100% (32/32), done.
@@ -183,11 +183,7 @@ git push
 #    f013da1..5b60d11  main -> main
 ```
 
-I got an email shortly after "Action needed: Secrets detected in recent commits
-to richplastow/generic-user-server", which refers to the tryout-firebase.js file -
-I deleted that.
-
-I also got a "Deploy to Firebase Hosting on merge: All jobs have failed" message.
+I got a "Deploy to Firebase Hosting on merge: All jobs have failed" message.
 After clicking ‘View workflow run’, I saw `npm ERR! Missing script: "build"`.
 
 I added `"build": "echo 'TODO build script'",` to the `"scripts"` object of

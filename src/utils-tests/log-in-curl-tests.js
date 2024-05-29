@@ -13,19 +13,19 @@ export const logInCurlTests = [
     ],
     [ // Missing a body.
         [`-v`, `-X`, `POST`, `${req.origin}/log-in`],
-        [res.http400badRequest, '< X-Powered-By: Express', '{"result":{"error":"Invalid username"}}'],
+        [res.http400badRequest, '< X-Powered-By: Express', '{"error":"Invalid username"}'],
     ],
     [ // Password is not a string.
         [`-v`, `-H`, req.jsonContentType, `-X`, `POST`, `-d`, `{"username":"superadmin","password":123}`, `${req.origin}/log-in`],
-        [res.http400badRequest, '{"result":{"error":"Invalid password"}}'],
+        [res.http400badRequest, '{"error":"Invalid password"}'],
     ],
     [ // No such username.
         [`-v`, `-H`, req.jsonContentType, `-X`, `POST`, `-d`, `{"username":"admin","password":"my_pass"}`, `${req.origin}/log-in`],
-        [res.http400badRequest, '{"result":{"error":"No such username"}}'],
+        [res.http400badRequest, '{"error":"No such username"}'],
     ],
     [ // Incorrect password.
         [`-v`, `-H`, req.jsonContentType, `-X`, `POST`, `-d`, `{"username":"superadmin","password":"nope"}`, `${req.origin}/log-in`],
-        [res.http400badRequest, '{"result":{"error":"Incorrect password"}}'],
+        [res.http400badRequest, '{"error":"Incorrect password"}'],
     ],
     [ // Successful log-in.
         [`-v`, `-H`, req.jsonContentType, `-X`, `POST`, `-d`, `{"username":"superadmin","password":"my_pass"}`, `${req.origin}/log-in`],

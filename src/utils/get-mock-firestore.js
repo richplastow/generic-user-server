@@ -17,11 +17,10 @@ export const getMockFirestore = (collections = []) => {
                         data() { return doc }, // TODO deep clone would be better
                         exists: !!doc,
                         get(key) { return doc[key] },
-                        update(data) {
-                            Object.entries(data)
-                                .forEach(([ key, val ]) => doc[key] = val)
-                        },
                     }
+                },
+                get id() {
+                    return id;
                 },
                 set(newDoc) {
                     if (!coll) {
@@ -29,6 +28,15 @@ export const getMockFirestore = (collections = []) => {
                         collections.push(coll);
                     }
                     doc = coll[docId] = newDoc;
+                },
+                update(data) {
+                    if (!coll) {
+                        coll = { id: collectionName };
+                        collections.push(coll); // TODO check if this is what Firestore does
+                    }
+                    doc = coll[docId];
+                    Object.entries(data)
+                        .forEach(([ key, val ]) => doc[key] = val)
                 },
             }
         },

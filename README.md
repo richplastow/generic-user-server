@@ -27,6 +27,14 @@ __`POST /log-in`__
 
 Whereas `POST /foo/log-in` logs admins and regular users in to the ‘foo’ domain,
 `POST /log-in` logs super-administrators into the generic-user-server instance.
+This endpoint responds with `sessionCookieUsername` and `sessionCookieUuid` in
+a JSON object, _and also_ as a `Set-Cookie` header.
+
+__`POST /log-out`__
+
+Whereas `POST /foo/log-out` logs admins and regular users in to the ‘foo’ domain,
+`POST /log-in` logs super-administrators into the generic-user-server instance.
+This endpoint revokes the `Set-Cookie` header created by `POST /log-in`. TODO
 
 __`GET /domains`__
 

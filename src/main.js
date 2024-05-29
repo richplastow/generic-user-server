@@ -92,22 +92,22 @@ export class GenericUserServer {
             this.server[method](
                 path,
                 async (req, res) => {
-                    let user = null;
+                    let userKit = null; // { userData, userDoc, userDocRef }
                     if (minimally !== 'anon') {
                         try {
-                            user = await getUser(req.headers.cookie, this.firestore, userCollectionName);
+                            userKit = await getUser(req.headers.cookie, this.firestore, userCollectionName);
                         } catch(err) {
                             res.status(400);
                             res.json({ error: `Must be logged in: ${err.message}` });
                             return;
                         }
-                        if (! userCan(user, minimally)) {
+                        if (! userCan(minimally, userKit)) {
                             res.status(403);
                             res.json({ error: 'Insufficient permissions' });
                             return;
                         }
                     }
-                    handler(req, res, this, user);
+                    handler(req, res, this, userKit);
                 },
             );
         });

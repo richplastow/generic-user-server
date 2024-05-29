@@ -19,7 +19,7 @@ export const getUser = async (cookieRaw, firestore, userCollectionName) => {
     if (! userDoc.exists) throw Error('No such sessionCookieUsername');
 
     // Xx.
-    const user = userDoc.data();
-    if (user.sessionCookieUuid !== sessionCookieUuid) throw Error('Incorrect sessionCookieUuid');
-    return user;
+    const userData = userDoc.data();
+    if (userData.sessionCookieUuid !== sessionCookieUuid) throw Error('Incorrect sessionCookieUuid');
+    return { userData, userDoc, userDocRef };
 };

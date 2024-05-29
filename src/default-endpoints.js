@@ -1,4 +1,5 @@
 import { logIn } from './utils/log-in.js';
+import { logOut } from './utils/log-out.js';
 
 export const defaultEndpoints = [
     {
@@ -16,21 +17,38 @@ export const defaultEndpoints = [
         path: `/log-in`,
         handler: async (req, res, { firestore, deps }) => {
             const { randomUUID } = deps;
-            let result, statusCode;
+            let error, result, statusCode;
             try {
-                result = await logIn({ randomUUID }, firestore, req.body, 'gus_superadmins');
                 statusCode = 200;
+                result = await logIn({ randomUUID }, firestore, req.body, 'gus_superadmins');
                 const { sessionCookieUsername, sessionCookieUuid } = result;
                 res.setHeader('Set-Cookie', [
                     `sessionCookieUsername=${sessionCookieUsername}`,
                     `sessionCookieUuid=${sessionCookieUuid}`,
                 ]);
             } catch (err) {
-                result = { error: err.message };
                 statusCode = 400;
+                error = err.message;
             }
             res.status(statusCode);
-            res.json({ result });
+            res.json(error ? { error } : { result });
+        },
+    },
+    {
+        method: 'post',
+        minimally: 'registered',
+        path: `/log-out`,
+        handler: async (req, res, _gus, userKit) => {
+            let error, result, statusCode;
+            try { // TODO make logOut() throw exceptions, or remove `try { ...`
+                statusCode = 200;
+                result = await logOut(userKit);
+            } catch (err) {
+                statusCode = 400;
+                error = err.message;
+            }
+            res.status(statusCode);
+            res.json(error ? { error } : { result });
         },
     },
     {

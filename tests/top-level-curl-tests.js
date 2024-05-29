@@ -24,6 +24,10 @@ export const topLevelCurlTests = [
         [res.http400badRequest, '{"error":"Must be logged in: Incorrect sessionCookieUuid"}'],
     ],
     [
+        [`-v`, `${req.origin}/collection/gus_superadmins`], // fails again, because session cookie is needed
+        [res.http400badRequest, '{"error":"Must be logged in: No cookies"}'],
+    ],
+    [
         [`-v`, `${req.origin}/domains`], // fails again, because session cookie is needed
         [res.http400badRequest, '{"error":"Must be logged in: No cookies"}'],
     ],
@@ -58,6 +62,20 @@ export const topLevelCurlTests = [
     [
         [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/collections`], // superadmin session cookie gives access
         [res.http200ok, '{"result":["gus_daily_reports","gus_superadmins"]}'],
+    ],
+    [
+        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/collection/gus_superadmins`], // again, superadmin session cookie gives access
+        [res.http200ok, {
+            result: {
+                superadmin: {
+                    isSuperadmin: true,
+                    pwHash: '2aa04e2e4fd0d86d5f4cf5063e671ec8',
+                    pwSalt: 'my_salt',
+                    isLoggedIn: true,
+                    sessionCookieUuid: '12345678-abcd-cdef-1234-0123456789ab'
+                }
+            }
+        }],
     ],
     [
         [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/domains`], // again, superadmin session cookie gives access

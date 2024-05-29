@@ -5,11 +5,35 @@
  * @return {object}
  */
 export const getMockFirestore = (collections = []) => {
+    // Validate `collections`. TODO more validation
+    collections.forEach(({ id }) => {
+        if (typeof id !== 'string') throw Error('A collection has no id string');
+    })
+
     return {
+        collection(collectionName) {
+            const coll = collections.find(({ id }) => id === collectionName) || [];
+            const docs = Object.entries(coll)
+                .filter(([id]) => id !== 'id')
+                .map(([docId, doc]) => ({
+                    data() { return doc }, // TODO deep clone would be better
+                    id: docId,
+                }))
+            ;
+            return {
+                get() {
+                    return {
+                        docs,
+                        empty: docs.length === 0,
+                        size: docs.length,
+                    }
+                },
+            }
+        },
         databaseId: 'gus-mock-firestore',
         doc(id) {
             const [ collectionName, docId ] = id.split('/');
-            let coll = collections.find(({ id }) => id === collectionName);
+            let coll = collections.find(({ id }) => id === collectionName) || [];
             let doc = coll ? coll[docId] : null;
             return {
                 get() {

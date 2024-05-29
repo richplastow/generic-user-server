@@ -17,8 +17,21 @@ export const defaultEndpoints = [
         path: '/collections',
         handler: async (_req, res, { firestore }) => {
             const collections = await firestore.listCollections();
-            const collectionIds = collections.map(col => col.id);
-            res.json({ result: collectionIds });
+            const collectionNames = collections.map(col => col.id);
+            res.json({ result: collectionNames });
+        },
+    },
+    {
+        method: 'get',
+        minimally: 'superadmin',
+        path: '/collection/:collectionName',
+        handler: async (req, res, { firestore }) => {
+            const { collectionName } = req.params;
+            const querySnapshot = await firestore.collection(collectionName).get();
+            const result = querySnapshot.docs.reduce(
+                (obj, doc) => ({ [doc.id]: doc.data(), ...obj }), {}
+            );
+            res.json({ result });
         },
     },
     {

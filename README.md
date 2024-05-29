@@ -27,6 +27,11 @@ __`GET /collections`__
 
 Responds with an array of collection names. Can only be accessed by superadmins.
 
+__`GET /collections/:COLLECTION_NAME`__
+
+Responds with the full contents of a collection, as a JSON object where document
+IDs are keys, and documents are sub-objects. Can only be accessed by superadmins.
+
 __`GET /domains`__
 
 Responds with an array of domain names. Can only be accessed by superadmins.

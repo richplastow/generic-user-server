@@ -12,6 +12,24 @@ export const defaultEndpoints = [
         },
     },
     {
+        method: 'get',
+        minimally: 'superadmin',
+        path: '/collections',
+        handler: async (_req, res, { firestore }) => {
+            const collections = await firestore.listCollections();
+            const collectionIds = collections.map(col => col.id);
+            res.json({ result: collectionIds });
+        },
+    },
+    {
+        method: 'get',
+        minimally: 'superadmin',
+        path: '/domains',
+        handler: (_req, res, gus) => {
+            res.json({ result: gus.domains });
+        },
+    },
+    {
         method: 'post',
         minimally: 'anon',
         path: `/log-in`,
@@ -49,14 +67,6 @@ export const defaultEndpoints = [
             }
             res.status(statusCode);
             res.json(error ? { error } : { result });
-        },
-    },
-    {
-        method: 'get',
-        minimally: 'superadmin',
-        path: '/domains',
-        handler: (_req, res, gus) => {
-            res.json({ result: gus.domains });
         },
     },
     {

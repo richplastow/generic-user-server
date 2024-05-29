@@ -38,7 +38,11 @@ export const example1CurlTests = [
         [res.http400badRequest, '{"error":"Must be logged in: No cookies"}'],
     ],
     [
-        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/domains`], // with session cookie
+        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/collections`], // superadmin session cookie gives access
+        [res.http200ok, '{"result":["gus_daily_reports","gus_superadmins","tunefields_users"]}'],
+    ],
+    [
+        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/domains`], // again, superadmin session cookie gives access
         [res.http200ok, '{"result":["tunefields"]}'],
     ],
 ];

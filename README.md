@@ -23,6 +23,20 @@ Responds with just two bytes, `ok`. All other endpoints use `application/json`
 for their response `Content-Type`, but this endpoint uses `text/plain` instead.
 Useful for AWS App Runner to 'ping' every 20 seconds, to show the app's running.
 
+__`GET /collections`__
+
+Responds with an array of collection names. Can only be accessed by superadmins.
+
+__`GET /domains`__
+
+Responds with an array of domain names. Can only be accessed by superadmins.
+
+__`GET /is-using-mock-db`__
+
+Responds with `{"result":true}` if the object returned by `getMockFirestore()`
+is being used. Responds with a 404 `{"error":"Not Found"}` if the real Firestore
+SDK returned by `getFirestore()`. Can be accessed by anonymous users.
+
 __`POST /log-in`__
 
 Whereas `POST /foo/log-in` logs admins and regular users in to the ‘foo’ domain,
@@ -35,16 +49,6 @@ __`POST /log-out`__
 Whereas `POST /foo/log-out` logs admins and regular users in to the ‘foo’ domain,
 `POST /log-in` logs super-administrators into the generic-user-server instance.
 This endpoint revokes the `Set-Cookie` header created by `POST /log-in`. TODO
-
-__`GET /domains`__
-
-Responds with an array of domain names. Can only be accessed by superadmins.
-
-__`GET /is-using-mock-db`__
-
-Responds with `{"result":true}` if the object returned by `getMockFirestore()`
-is being used. Responds with a 404 `{"error":"Not Found"}` if the real Firestore
-SDK returned by `getFirestore()`. Can be accessed by anonymous users.
 
 > __IMPORTANT:__ A live production server should __*never*__ use the mock
 > firestore — it's only intended for testing and offline development.

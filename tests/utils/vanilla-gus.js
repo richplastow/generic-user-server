@@ -1,5 +1,7 @@
 import { GenericUserServer } from '../../index.js';
 import { getMockFirestore } from '../../src/utils/get-mock-firestore.js';
+import { mockGetNowDate } from '../../src/utils/mock-get-now-date.js';
+import { MockTimestamp } from '../../src/utils/mock-timestamp.js';
 
 const mockCollections = [
     {
@@ -18,7 +20,9 @@ const mockCollections = [
 const vanillaGus = new GenericUserServer({
     customEndpoints: [],
     deps: {
+        getNowDate: mockGetNowDate,
         randomUUID: () => '12345678-abcd-cdef-1234-0123456789ab',
+        Timestamp: MockTimestamp,
     },
     domains: [],
     firestore: getMockFirestore(mockCollections),

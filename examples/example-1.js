@@ -1,7 +1,10 @@
+import { Timestamp } from '@google-cloud/firestore';
 import { webcrypto } from 'node:crypto';
 import { GenericUserServer } from '../index.js';
 import { getFirestore } from '../src/utils/get-firestore.js';
 import { getMockFirestore } from '../src/utils/get-mock-firestore.js';
+import { mockGetNowDate } from '../src/utils/mock-get-now-date.js';
+import { MockTimestamp } from '../src/utils/mock-timestamp.js';
 
 const customEndpoints = [
     {
@@ -38,11 +41,16 @@ const mockCollections = [
 
 const example1 = new GenericUserServer({
     customEndpoints,
-    deps: {
-        randomUUID: process.env.GUS_FIRESTORE_JSON_KEY
-            ? webcrypto.randomUUID.bind(webcrypto)
-            : () => '12345678-abcd-cdef-1234-0123456789ab',
-    },
+    deps: process.env.GUS_FIRESTORE_JSON_KEY
+        ? {
+            getNowDate() { return new Date() },
+            randomUUID: webcrypto.randomUUID.bind(webcrypto),
+            Timestamp,
+        } : {
+            getNowDate: mockGetNowDate,
+            randomUUID: () => '12345678-abcd-cdef-1234-0123456789ab',
+            Timestamp: MockTimestamp,
+        },
     domains: ['tunefields'],
     firestore: process.env.GUS_FIRESTORE_JSON_KEY
         ? getFirestore() : getMockFirestore(mockCollections),

@@ -46,8 +46,11 @@ __`POST /log-in`__
 
 Whereas `POST /foo/log-in` logs admins and regular users in to the ‘foo’ domain,
 `POST /log-in` logs super-administrators into the generic-user-server instance.
-This endpoint responds with `sessionCookieUsername` and `sessionCookieUuid` in
-a JSON object, _and also_ as a `Set-Cookie` header.
+This endpoint responds with `sessionCookieExpires`, `sessionCookieUsername` and
+`sessionCookieUuid` in a JSON object. This endpoint _also_ responds with the
+`sessionCookieUsername` and `sessionCookieUuid` in a `Set-Cookie` header - note
+that the `Expires` attribute is not set, so the cookie will be discarded when
+the user ends their session.
 
 __`POST /log-out`__
 
@@ -105,8 +108,8 @@ curl http://localhost:1234/is-using-mock-db
 That result means that a real Firestore database is being used.
 
 ```bash
-curl -v -H 'Content-Type: application/json' -X POST -d '{"username":"superadmin","password":"my_pass"}' http://localhost:1234/log-in
-# {"result":{"message":"'superadmin' successfully logged in","sessionCookieUsername":"superadmin","sessionCookieUuid":"de83dda3-afe7-48b8-8a27-251f2277d6db"}}
+curl -v -H 'Content-Type: application/json' -X POST -d '{"for1Week":true,"password":"my_pass","username":"superadmin"}' http://localhost:1234/log-in
+# {"result":{"message":"'superadmin' successfully logged in","sessionCookieExpires":"2024-06-05T16:26:52.345Z","sessionCookieUsername":"superadmin","sessionCookieUuid":"de83dda3-afe7-48b8-8a27-251f2277d6db"}}
 curl -v -H 'cookie: sessionCookieUsername=superadmin; sessionCookieUuid=de83dda3-afe7-48b8-8a27-251f2277d6db' http://localhost:1234/domains
 # {"result":["tunefields"]}
 ```

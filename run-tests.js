@@ -44,6 +44,8 @@ const slowResolvingCurlTest = async testSuite => new Promise((resolve, reject) =
                             if (!allOutput.some(line => expectedResult.test(line))) {
                                 errors.push(`${testSuiteName}: Expected ${expectedResult
                                     } to pass a stderr or stdout line of:\n    curl '${args.join("' '")}'`);
+                                console.log('\n\n\n\n', args, ':\n');
+                                console.log('allOutput:', allOutput, '\n\n');
                             }    
                         } else {
                             const expectedStr = typeof expectedResult === 'object'
@@ -51,11 +53,11 @@ const slowResolvingCurlTest = async testSuite => new Promise((resolve, reject) =
                             if (!allOutput.includes(expectedStr)) {
                                 errors.push(`${testSuiteName}: Expected result "${expectedStr
                                     }" not found in stderr or stdout of:\n    curl '${args.join("' '")}'`);
+                                console.log('\n\n\n\n', args, ':\n');
+                                console.log('allOutput:', allOutput, '\n\n');
                             }    
                         }
                     });
-                    // console.log('\n\n\n\n', args, ':\n');
-                    // console.log('allOutput:', allOutput, '\n\n');
                 });    
             }
             subProcess.kill('SIGINT'); // equivalent to ctrl-c

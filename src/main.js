@@ -1,4 +1,3 @@
-import { Timestamp } from '@google-cloud/firestore';
 import express from 'express';
 
 import { defaultEndpoints } from './default-endpoints.js';
@@ -17,7 +16,7 @@ export class GenericUserServer {
         port = 1234,
     } = {}) {
         // Record the `constructedAt` timestamp, in Firestore format.
-        this.constructedAt = Timestamp.now();
+        this.constructedAt = deps.getNowDate('constructedAt');
 
         // Generate an ID for this server instance.
         const datetime = new Date().toISOString().slice(0, 19).replace(/[-:]/g, '');
@@ -47,10 +46,15 @@ export class GenericUserServer {
                 minimally: 'anon',
                 path: `/domain/${domain}/log-in`,
                 handler: async (req, res) => {
-                    const { randomUUID } = this.deps;
+                    const { getNowDate, randomUUID, Timestamp } = this.deps;
                     let error, result, statusCode;
                     try {
-                        result = await logIn({ randomUUID }, this.firestore, req.body, `${domain}_users`);
+                        result = await logIn(
+                            { getNowDate, randomUUID, Timestamp },
+                            this.firestore,
+                            req.body,
+                            `${domain}_users`
+                        );
                         statusCode = 200;
                         const { sessionCookieUsername, sessionCookieUuid } = result;
                         res.setHeader('Set-Cookie', [
@@ -149,12 +153,13 @@ export class GenericUserServer {
         const document = this.firestore.doc(
             `gus_daily_reports/${(new Date()).toISOString().slice(0, 10)}_${this.constructedID}`
         );
-        this.initialisedAt = Timestamp.now();
+        const { getNowDate, Timestamp } = this.deps;
+        this.initialisedAt = getNowDate('initialisedAt');
         await document.set({
-            constructedAt: this.constructedAt,
+            constructedAt: Timestamp.fromDate(this.constructedAt),
             constructedID: this.constructedID,
             gusName: this.gusName,
-            initialisedAt: this.initialisedAt,
+            initialisedAt: Timestamp.fromDate(this.initialisedAt),
             isExample: this.isExample,
         });
     }

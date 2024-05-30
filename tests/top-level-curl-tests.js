@@ -40,12 +40,20 @@ export const topLevelCurlTests = [
 
     // Logged in as a superadmin, can access `GET /domains`.
     [
-        [`-v`, `-H`, req.jsonContentType, `-X`, `POST`, `-d`, '{"username":"superadmin","password":"my_pass"}', `${req.origin}/log-in`],
-        [res.http200ok, {result:{
-            message: "'superadmin' successfully logged in",
-            sessionCookieUsername: "superadmin",
-            sessionCookieUuid: "12345678-abcd-cdef-1234-0123456789ab",
-        }}],
+        [`-v`, `-H`, req.jsonContentType, `-X`, `POST`, `-d`, '{"password":"my_pass","username":"superadmin"}', `${req.origin}/log-in`],
+        [
+            res.http200ok,
+            '< Set-Cookie: sessionCookieUsername=superadmin',
+            '< Set-Cookie: sessionCookieUuid=12345678-abcd-cdef-1234-0123456789ab',
+            {
+                result: {
+                    message: "'superadmin' successfully logged in",
+                    sessionCookieExpires: "2024-05-29T18:26:52.345Z",
+                    sessionCookieUsername: 'superadmin',
+                    sessionCookieUuid: '12345678-abcd-cdef-1234-0123456789ab',
+                }
+            }
+        ],
     ],
     [
         [`-v`, `${req.origin}/domains`], // without session cookie, even though we logged in
@@ -72,6 +80,7 @@ export const topLevelCurlTests = [
                     pwHash: '2aa04e2e4fd0d86d5f4cf5063e671ec8',
                     pwSalt: 'my_salt',
                     isLoggedIn: true,
+                    sessionCookieExpires: '2024-05-29T18:26:52.345Z',
                     sessionCookieUuid: '12345678-abcd-cdef-1234-0123456789ab'
                 }
             }

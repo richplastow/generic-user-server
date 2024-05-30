@@ -47,11 +47,16 @@ export const defaultEndpoints = [
         minimally: 'anon',
         path: `/log-in`,
         handler: async (req, res, { firestore, deps }) => {
-            const { randomUUID } = deps;
+            const { getNowDate, randomUUID, Timestamp } = deps;
             let error, result, statusCode;
             try {
                 statusCode = 200;
-                result = await logIn({ randomUUID }, firestore, req.body, 'gus_superadmins');
+                result = await logIn(
+                    { getNowDate, randomUUID, Timestamp },
+                    firestore,
+                    req.body,
+                    'gus_superadmins'
+                );
                 const { sessionCookieUsername, sessionCookieUuid } = result;
                 res.setHeader('Set-Cookie', [
                     `sessionCookieUsername=${sessionCookieUsername}`,

@@ -36,9 +36,10 @@ export const getUserCurlTests = [
         [res.http400badRequest, '{"error":"Must be logged in: Incorrect sessionCookieUuid"}'],
     ],
     [
-        [`-v`, `-H`, req.jsonContentType, `-X`, `POST`, `-d`, '{"username":"superadmin","password":"my_pass"}', `${req.origin}/log-in`],
+        [`-v`, `-H`, req.jsonContentType, `-X`, `POST`, `-d`, '{"password":"my_pass","username":"superadmin"}', `${req.origin}/log-in`],
         [res.http200ok, {result:{
             message: "'superadmin' successfully logged in",
+            sessionCookieExpires: "2024-05-29T18:26:52.345Z",
             sessionCookieUsername: "superadmin",
             sessionCookieUuid: "12345678-abcd-cdef-1234-0123456789ab",
         }}],

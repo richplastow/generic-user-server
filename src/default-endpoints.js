@@ -37,6 +37,18 @@ export const defaultEndpoints = [
     {
         method: 'get',
         minimally: 'superadmin',
+        path: '/collection/:collectionName/:documentId',
+        handler: async (req, res, { firestore }) => {
+            const { collectionName, documentId } = req.params;
+            const docRef = firestore.doc(`${collectionName}/${documentId}`);
+            const doc = await docRef.get();
+            const result = doc.data();
+            res.json({ result });
+        },
+    },
+    {
+        method: 'get',
+        minimally: 'superadmin',
         path: '/domains',
         handler: (_req, res, gus) => {
             res.json({ result: gus.domains });
@@ -47,12 +59,11 @@ export const defaultEndpoints = [
         minimally: 'anon',
         path: `/log-in`,
         handler: async (req, res, { firestore, deps }) => {
-            const { getNowDate, randomUUID, Timestamp } = deps;
             let error, result, statusCode;
             try {
                 statusCode = 200;
                 result = await logIn(
-                    { getNowDate, randomUUID, Timestamp },
+                    deps,
                     firestore,
                     req.body,
                     'gus_superadmins'

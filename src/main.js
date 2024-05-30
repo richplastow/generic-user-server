@@ -46,11 +46,10 @@ export class GenericUserServer {
                 minimally: 'anon',
                 path: `/domain/${domain}/log-in`,
                 handler: async (req, res) => {
-                    const { getNowDate, randomUUID, Timestamp } = this.deps;
                     let error, result, statusCode;
                     try {
                         result = await logIn(
-                            { getNowDate, randomUUID, Timestamp },
+                            this.deps,
                             this.firestore,
                             req.body,
                             `${domain}_users`
@@ -96,10 +95,15 @@ export class GenericUserServer {
             this.server[method](
                 path,
                 async (req, res) => {
-                    let userKit = null; // { userData, userDoc, userDocRef }
+                    let userKit = null; // { nowDate, nowMillis, userData, userDoc, userDocRef }
                     if (minimally !== 'anon') {
                         try {
-                            userKit = await getUser(req.headers.cookie, this.firestore, userCollectionName);
+                            userKit = await getUser(
+                                this.deps,
+                                req.headers.cookie,
+                                this.firestore,
+                                userCollectionName,
+                            );
                         } catch(err) {
                             res.status(400);
                             res.json({ error: `Must be logged in: ${err.message}` });

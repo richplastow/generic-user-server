@@ -28,17 +28,21 @@ export const topLevelCurlTests = [
         [res.http400badRequest, '{"error":"Must be logged in: No cookies"}'],
     ],
     [
+        [`-v`, `${req.origin}/collection/gus_superadmins/superadmin`], // fails again, because session cookie is needed
+        [res.http400badRequest, '{"error":"Must be logged in: No cookies"}'],
+    ],
+    [
         [`-v`, `${req.origin}/domains`], // fails again, because session cookie is needed
         [res.http400badRequest, '{"error":"Must be logged in: No cookies"}'],
     ],
 
-    // Logged in as a regular user, also cannot access `GET /domains`.
+    // Logged in as a regular user.
     // TODO
 
-    // Logged in as an admin, still cannot access `GET /domains`.
+    // Logged in as an admin.
     // TODO
 
-    // Logged in as a superadmin, can access `GET /domains`.
+    // Logged in as a superadmin.
     [
         [`-v`, `-H`, req.jsonContentType, `-X`, `POST`, `-d`, '{"password":"my_pass","username":"superadmin"}', `${req.origin}/log-in`],
         [
@@ -83,6 +87,19 @@ export const topLevelCurlTests = [
                     sessionCookieExpires: '2024-05-29T18:26:52.345Z',
                     sessionCookieUuid: '12345678-abcd-cdef-1234-0123456789ab'
                 }
+            }
+        }],
+    ],
+    [
+        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/collection/gus_superadmins/superadmin`], // again, superadmin session cookie gives access
+        [res.http200ok, {
+            result: {
+                isSuperadmin: true,
+                pwHash: '2aa04e2e4fd0d86d5f4cf5063e671ec8',
+                pwSalt: 'my_salt',
+                isLoggedIn: true,
+                sessionCookieExpires: '2024-05-29T18:26:52.345Z',
+                sessionCookieUuid: '12345678-abcd-cdef-1234-0123456789ab'
             }
         }],
     ],

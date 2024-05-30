@@ -8,6 +8,8 @@ export const mockGetNowDate = hint => {
             return new Date(1717000001234); // 2024-05-29T16:26:41.234Z
         case 'logIn_superadmin':
             return new Date(1717000012345); // 2024-05-29T16:26:52.345Z
+        case 'getUser_superadmin':
+            return new Date(1717000098765); // 2024-05-29T16:28:18.765Z
         default:
             return new Date(1717000123456); // 2024-05-29T16:28:43.456Z
     }

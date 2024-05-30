@@ -4,6 +4,7 @@ export const logOut = async (userKit) => {
     // Mark the user as logged-out.
     await userDocRef.update({
         isLoggedIn: false,
+        sessionCookieExpires: null,
         sessionCookieUuid: null,
     });
 

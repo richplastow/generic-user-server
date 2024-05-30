@@ -15,13 +15,23 @@ a Google Firestore database.
 - Can send emails to confirm sign-up, or to reset passwords
 - Provides CRUD for app-usage statistics
 
-## Top-level endpoints
+## Endpoints
+
+### Anonymous, top-level endpoints
 
 __`GET /`__
 
 Responds with just two bytes, `ok`. All other endpoints use `application/json`
 for their response `Content-Type`, but this endpoint uses `text/plain` instead.
 Useful for AWS App Runner to 'ping' every 20 seconds, to show the app's running.
+
+__`GET /is-using-mock-db`__
+
+Responds with `{"result":true}` if the object returned by `getMockFirestore()`
+is being used. Responds with a 404 `{"error":"Not Found"}` if the real Firestore
+SDK returned by `getFirestore()`. Can be accessed by anonymous users.
+
+### Database and internal config query endpoints, for superusers
 
 __`GET /collections`__
 
@@ -32,15 +42,16 @@ __`GET /collections/:COLLECTION_NAME`__
 Responds with the full contents of a collection, as a JSON object where document
 IDs are keys, and documents are sub-objects. Can only be accessed by superadmins.
 
+__`GET /collections/:COLLECTION_NAME/:DOCUMENT_ID`__
+
+Responds with the full contents of a document as a JSON object. Can only be
+accessed by superadmins.
+
 __`GET /domains`__
 
 Responds with an array of domain names. Can only be accessed by superadmins.
 
-__`GET /is-using-mock-db`__
-
-Responds with `{"result":true}` if the object returned by `getMockFirestore()`
-is being used. Responds with a 404 `{"error":"Not Found"}` if the real Firestore
-SDK returned by `getFirestore()`. Can be accessed by anonymous users.
+### Superuser session management
 
 __`POST /log-in`__
 

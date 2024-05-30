@@ -1,25 +1,49 @@
+import { Timestamp } from '@google-cloud/firestore';
 import { parseDelimitedData } from './parse-delimited-data.js';
 import { usernameRx, uuidRx } from './regexps.js';
 
-export const getUser = async (cookieRaw, firestore, userCollectionName) => {
+export const getUser = async ({ getNowDate }, cookieRaw, firestore, userCollectionName) => {
     if (! cookieRaw) throw Error('No cookies');
 
     const parsedCookies = parseDelimitedData('; ', cookieRaw); // TODO deal with just ';'
     const { sessionCookieUsername, sessionCookieUuid } = parsedCookies;
 
-    // Run basic validation on the user's cookie header.
+    // Run basic validation on the user's 'Cookie' header.
     if (typeof sessionCookieUsername !== 'string') throw Error('No sessionCookieUsername');
     if (typeof sessionCookieUuid !== 'string') throw Error('No sessionCookieUuid');
     if (! usernameRx.test(sessionCookieUsername)) throw Error('Invalid sessionCookieUsername');
     if (! uuidRx.test(sessionCookieUuid)) throw Error('Invalid sessionCookieUuid');
 
-    // Xx.
+    // Try to get a handle on the user document, and retrieve the user data.
     const userDocRef = firestore.doc(`${userCollectionName}/${sessionCookieUsername}`);
     const userDoc = await userDocRef.get();
     if (! userDoc.exists) throw Error('No such sessionCookieUsername');
-
-    // Xx.
     const userData = userDoc.data();
     if (userData.sessionCookieUuid !== sessionCookieUuid) throw Error('Incorrect sessionCookieUuid');
-    return { userData, userDoc, userDocRef };
+
+    // Check how much time remains, before the user's session expires.
+    const nowDate = getNowDate(`getUser_${sessionCookieUsername}`);
+    const nowMillis = nowDate.valueOf();
+    const expiresMillis = userData.sessionCookieExpires.toMillis();
+    const remainingMinutes = (expiresMillis - nowMillis) / (60 * 1000);
+
+    // If the session has expired, mark the user as logged-out.
+    if (remainingMinutes <= 0) {
+        await userDocRef.update({
+            isLoggedIn: false,
+            sessionCookieExpires: null,
+            sessionCookieUuid: null,
+        });
+        throw Error('Expired sessionCookieExpiry');
+    }
+
+    // If the session has nearly expired, give the user another 5 minutes.
+    // TODO maybe this should not be able to continue indefinitely?
+    if (remainingMinutes <= 5) {
+        await userDocRef.update({
+            sessionCookieExpires: Timestamp.fromMillis(expiresMillis + 60 * 1000),
+        });
+    }
+
+    return { nowDate, nowMillis, userData, userDoc, userDocRef };
 };

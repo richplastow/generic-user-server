@@ -8,6 +8,7 @@ export const defaultEndpoints = [
         minimally: 'anon',
         path: '/',
         handler: (_req, res) => {
+            res.header('Access-Control-Allow-Origin');
             res.type('txt');
             res.end('ok');
         },
@@ -83,8 +84,8 @@ export const defaultEndpoints = [
                 );
                 const { sessionCookieUsername, sessionCookieUuid } = result;
                 res.setHeader('Set-Cookie', [
-                    `sessionCookieUsername=${sessionCookieUsername}`,
-                    `sessionCookieUuid=${sessionCookieUuid}`,
+                    `sessionCookieUsername=${sessionCookieUsername}; SameSite=None`,
+                    `sessionCookieUuid=${sessionCookieUuid}; SameSite=None`,
                 ]);
             } catch (err) {
                 statusCode = 400;

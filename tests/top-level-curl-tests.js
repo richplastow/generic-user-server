@@ -60,8 +60,8 @@ export const topLevelCurlTests = [
         ],
         [
             res.http200ok,
-            '< Set-Cookie: sessionCookieUsername=superadmin',
-            '< Set-Cookie: sessionCookieUuid=12345678-abcd-cdef-1234-0123456789ab',
+            '< Set-Cookie: sessionCookieUsername=superadmin; SameSite=None',
+            '< Set-Cookie: sessionCookieUuid=12345678-abcd-cdef-1234-0123456789ab; SameSite=None',
             {
                 result: {
                     message: "'superadmin' successfully logged in",

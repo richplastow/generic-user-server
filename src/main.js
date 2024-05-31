@@ -1,3 +1,4 @@
+import cors from 'cors';
 import express from 'express';
 
 import { defaultEndpoints } from './default-endpoints.js';
@@ -74,8 +75,13 @@ export class GenericUserServer {
         // Create an Express instance (often called `app` in Express examples).
         // Use express.json() - built-in middleware which parses requests with
         // JSON payloads. See <http://expressjs.com/en/4x/api.html#express.json>
+        // Also use cors() on all routes, to prevent cross-origin errors
         this.server = express();
         this.server.use(express.json());
+        this.server.use(cors({
+            credentials: true,
+            origin: /./, // TODO GUS should have options to set up strict and secure CORS
+        }))
     }
 
     async initialise() {

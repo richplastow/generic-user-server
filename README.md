@@ -31,6 +31,29 @@ Responds with `{"result":true}` if the object returned by `getMockFirestore()`
 is being used. Responds with a 404 `{"error":"Not Found"}` if the real Firestore
 SDK returned by `getFirestore()`. Can be accessed by anonymous users.
 
+> __IMPORTANT:__ A live production server should __*never*__ use the mock
+> firestore — it's only intended for testing and offline development.
+
+### Superuser session management
+
+__`POST /log-in`__
+
+Whereas `POST /foo/log-in` logs admins and regular users in to the ‘foo’ domain,
+`POST /log-in` logs super-administrators into the generic-user-server instance.
+This endpoint responds with `sessionCookieExpires`, `sessionCookieUsername` and
+`sessionCookieUuid` in a JSON object. This endpoint _also_ responds with the
+`sessionCookieUsername` and `sessionCookieUuid` in a `Set-Cookie` header - note
+that the `Expires` attribute is not set, so the cookie will be discarded when
+the user ends their session.
+
+__`POST /log-out`__
+
+Whereas `POST /foo/log-out` logs admins and regular users in to the ‘foo’ domain,
+`POST /log-in` logs super-administrators into the generic-user-server instance.
+This endpoint changes `sessionCookieExpires` and `sessionCookieUuid` in the DB
+to `null`. It's not possible to revoke the `Set-Cookie` header, though it can be
+overwritten by a successful log-in later on. TODO maybe Set-Cookie to null?
+
 ### Endpoints for superusers to read server settings
 
 __`GET /domains`__
@@ -60,27 +83,6 @@ If a property is omitted, it will remain the same in the database. Strings in
 the form `2024-05-29T18:26:52.345Z` are converted to `Timestamp` instances.
 Objects in the form `{"_seconds":123,"_nanoseconds":456}` are also converted to
 `Timestamp` instances. Responds with `{"result":"ok"}` if the update succeeded.
-
-### Superuser session management
-
-__`POST /log-in`__
-
-Whereas `POST /foo/log-in` logs admins and regular users in to the ‘foo’ domain,
-`POST /log-in` logs super-administrators into the generic-user-server instance.
-This endpoint responds with `sessionCookieExpires`, `sessionCookieUsername` and
-`sessionCookieUuid` in a JSON object. This endpoint _also_ responds with the
-`sessionCookieUsername` and `sessionCookieUuid` in a `Set-Cookie` header - note
-that the `Expires` attribute is not set, so the cookie will be discarded when
-the user ends their session.
-
-__`POST /log-out`__
-
-Whereas `POST /foo/log-out` logs admins and regular users in to the ‘foo’ domain,
-`POST /log-in` logs super-administrators into the generic-user-server instance.
-This endpoint revokes the `Set-Cookie` header created by `POST /log-in`. TODO
-
-> __IMPORTANT:__ A live production server should __*never*__ use the mock
-> firestore — it's only intended for testing and offline development.
 
 ## Running the examples
 

@@ -59,3 +59,15 @@ node_modules/ is now 22,794,900 bytes (29.7 MB on disk) for 2,988 items
 
 > Note that `npm i firebase` or `npm i firebase-admin` would both have been
 > bigger, at ~140 MB and ~28 MB respectively.
+
+## cors
+
+```bash
+npm i cors
+# added 2 packages, and audited 177 packages in 2s
+# 18 packages are looking for funding
+#   run `npm fund` for details
+# found 0 vulnerabilities
+```
+
+node_modules/ is now 22,833,392 bytes (29.8 MB on disk) for 3,001 items

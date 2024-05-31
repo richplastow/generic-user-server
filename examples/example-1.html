@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg viewBox='-4 -4 8 8'
+        xmlns='http://www.w3.org/2000/svg'><circle r='4' fill='%23123456'/></svg>">
+    <style>
+        body { background: #132; color: #dfe; font: 18px/1.5 sans-serif }
+        body.isLoggedIn-true .if-logged-out, body.isLoggedIn-false .if-logged-in { display: none }
+        a { display: inline-block; padding: .2em .8em; margin: .2em 0; background: #687;
+        border-radius: .2em; color: #fff!important; text-decoration: none }
+        nav a:hover { background: #798 }
+        nav span { float: right }
+        form { padding: 1em; border: 2px solid #465; border-radius: .5em }
+        label { display: block }
+        .error, .result { margin: 0 }
+        .error { color: #f66 }
+        .result { color: #6f6 }
+    </style>
+    <title>GenericUserServer Example 1</title>
+</head>
+<body>
+    <div class="error"><script>document.write(location.protocol === 'file:'
+        ? "The <code>file://</code> protocol won't work!" : '')</script></div>
+
+    <h3>Anonymous, top-level endpoints</h3>
+
+    <form>
+        <a href="javascript:void(0)" onclick="gusGet(this.parentNode, '/')">Ping the root route</a>
+        <pre class="error"></pre><pre class="result"></pre>
+    </form>
+
+    <form>
+        <a href="javascript:void(0)" onclick="gusGet(this.parentNode, '/is-using-mock-db')">Is using mock DB?</a>
+        <pre class="error"></pre><pre class="result"></pre>
+    </form>
+
+    <h3>Superuser session management</h3>
+
+    <form>
+        <label for="username">Username:
+            <input type="text" name="username">
+        </label>
+        <label for="password">Password:
+            <input type="password" name="password">
+        </label>
+        <label for="for1Week">Log in for 1 week, not just 2 hours:
+            <input type="checkbox" name="for1Week">
+        </label>
+        <a href="javascript:void(0)" onclick="gusPost(this.parentNode, '/log-in')">Superadmin Log In</a>
+        <pre class="error"></pre><pre class="result"></pre>
+    </form>
+
+    <form>
+        <a href="javascript:void(0)" onclick="gusPost(this.parentNode, '/log-out')">Superadmin Log Out</a>
+        <pre class="error"></pre><pre class="result"></pre>
+    </form>
+
+    <h3>Endpoints for superusers to read server settings</h3>
+
+    <form>
+        <a href="javascript:void(0)" onclick="gusGet(this.parentNode, '/domains')">domains</a>
+        <pre class="error"></pre><pre class="result"></pre>
+    </form>
+
+    <h3>Endpoints for superusers to query and edit the database</h3>
+
+    <form>
+        <a href="javascript:void(0)" onclick="gusGet(this.parentNode, '/collections')">collections</a>
+        <pre class="error"></pre><pre class="result"></pre>
+    </form>
+
+    TODO NEXT add the rest of these
+
+    <script>
+        async function gusGet($form, route) {
+            const $error = $form.querySelector('.error');
+            const $result = $form.querySelector('.result');
+
+            let errorOrResult, status;
+            try {
+                const response = await fetch(
+                    `http://localhost:1234${route}`,
+                    {
+                        mode: 'cors', // no-cors, *cors, same-origin
+                        credentials: 'include', // include, *same-origin, omit - must use 'include', to send cookies
+                    },
+                );
+                status = [ response.status, response.statusText ];
+                errorOrResult = route === '/'
+                    ? { result: await response.text() } // special case
+                    : await response.json();
+            } catch(err) { errorOrResult = { error: err.message } }
+            const { error, result } = errorOrResult;
+            $error.innerText = error ? `${status.join(' ')} ${JSON.stringify(error, null, 4)}` : '';
+            $result.innerText = result ? `${status.join(' ')} ${JSON.stringify(result, null, 4)}` : '';
+        }
+
+        async function gusPost($form, route) {
+            const $error = $form.querySelector('.error');
+            const $result = $form.querySelector('.result');
+            const $$inputs = $form.querySelectorAll('input');
+            const data = Array.from($$inputs).reduce((obj, $input) => ({
+                [$input.getAttribute('name')]: $input.getAttribute('type') === 'checkbox'
+                    ? $input.checked // convert checkbox value to boolean
+                    : $input.value,
+                ...obj,
+            }), {});
+            console.log(data);
+
+            let errorOrResult, status;
+            try {
+                const response = await fetch(
+                    `http://localhost:1234${route}`,
+                    {
+                        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                        mode: 'cors', // no-cors, *cors, same-origin
+                        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                        credentials: 'include', // include, *same-origin, omit - must use 'include', to send cookies
+                        headers: { 'Content-Type': 'application/json' },
+                        redirect: 'follow', // manual, *follow, error
+                        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                        body: JSON.stringify(data), // body data type must match "Content-Type" header
+                    },
+                );
+                status = [ response.status, response.statusText ];
+                errorOrResult = await response.json();
+            } catch(err) { errorOrResult = { error: err.message } }
+            const { error, result } = errorOrResult;
+            $error.innerText = error ? `${status.join(' ')} ${JSON.stringify(error, null, 4)}` : '';
+            $result.innerText = result ? `${status.join(' ')} ${JSON.stringify(result, null, 4)}` : '';
+        }
+    </script>
+</body>
+</html>

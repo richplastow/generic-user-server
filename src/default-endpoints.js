@@ -1,5 +1,6 @@
 import { logIn } from './utils/log-in.js';
 import { logOut } from './utils/log-out.js';
+import { maybeToTimestamp } from './utils/maybe-to-timestamp.js';
 
 export const defaultEndpoints = [
     {
@@ -44,6 +45,18 @@ export const defaultEndpoints = [
             const doc = await docRef.get();
             const result = doc.data();
             res.json({ result });
+        },
+    },
+    {
+        method: 'put',
+        minimally: 'superadmin',
+        path: '/collection/:collectionName/:documentId',
+        handler: async (req, res, { deps, firestore }) => {
+            const { collectionName, documentId } = req.params;
+            const updates = maybeToTimestamp(deps, req.body);
+            const docRef = firestore.doc(`${collectionName}/${documentId}`);
+            await docRef.update(updates);
+            res.json({ result: 'ok' });
         },
     },
     {

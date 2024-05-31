@@ -58,6 +58,7 @@ export const getMockFirestore = (collections = []) => {
                         coll = { id: collectionName };
                         collections.push(coll); // TODO check if this is what Firestore does
                     }
+                    coll[docId] = coll[docId] || {}; // TODO check if this is what Firestore does
                     doc = coll[docId];
                     Object.entries(data)
                         .forEach(([ key, val ]) => doc[key] = val)

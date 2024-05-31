@@ -9,9 +9,9 @@ export class GenericUserServer {
     constructor({
         customEndpoints,
         deps,
-        domains,
+        domains = [],
         firestore,
-        gusName,
+        gusName = 'untitled-gus',
         isExample = false,
         port = 1234,
     } = {}) {
@@ -23,15 +23,12 @@ export class GenericUserServer {
         const randomString = Math.random().toString(36).slice(2, 8);
         this.constructedID = `${isExample ? 'example' : 'server'}_${datetime}_${randomString}`;
 
-        this.domains = domains || [];
-        this.deps = deps;
-        this.firestore = firestore;
-        this.gusName = gusName || 'untitled-gus';
-        this.isExample = isExample;
-        this.port = port;
-        this.server = express();
+        // When converting a `Timestamp` object to JSON, eg `res.json({ result })`,
+        // produce a simple ISO date string, not `{"_seconds":1,"_nanoseconds":2}`.
+        deps.Timestamp.prototype.toJSON = function() {
+            return this.toDate().toISOString() }
 
-        // Generate the `endpoints` array.
+        // Generate the domain-specific endpoints.
         const generatedEndpoints = [
             ...(customEndpoints || []), // use custom endpoints first
             ...defaultEndpoints, // then use defaults, eg GET / -> {"result":"ok"}
@@ -48,12 +45,7 @@ export class GenericUserServer {
                 handler: async (req, res) => {
                     let error, result, statusCode;
                     try {
-                        result = await logIn(
-                            this.deps,
-                            this.firestore,
-                            req.body,
-                            `${domain}_users`
-                        );
+                        result = await logIn(deps, firestore, req.body, `${domain}_users`);
                         statusCode = 200;
                         const { sessionCookieUsername, sessionCookieUuid } = result;
                         res.setHeader('Set-Cookie', [
@@ -70,10 +62,19 @@ export class GenericUserServer {
             })),
         ];
 
+        // Record constructor options as instance properties.
+        this.domains = domains;
+        this.deps = deps;
         this.endpoints = generatedEndpoints;
+        this.firestore = firestore;
+        this.gusName = gusName;
+        this.isExample = isExample;
+        this.port = port;
 
+        // Create an Express instance (often called `app` in Express examples).
         // Use express.json() - built-in middleware which parses requests with
         // JSON payloads. See <http://expressjs.com/en/4x/api.html#express.json>
+        this.server = express();
         this.server.use(express.json());
     }
 

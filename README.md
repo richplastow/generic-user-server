@@ -38,8 +38,8 @@ SDK returned by `getFirestore()`. Can be accessed by anonymous users.
 
 __`POST /log-in`__
 
-Whereas `POST /foo/log-in` logs admins and regular users in to the ‘foo’ domain,
-`POST /log-in` logs super-administrators into the generic-user-server instance.
+Whereas `POST /v1/foo/log-in` logs admins and regular users in to the ‘v1/foo’
+domain, `POST /log-in` logs super-administrators into the entire GUS instance.
 This endpoint responds with `sessionCookieExpires`, `sessionCookieUsername` and
 `sessionCookieUuid` in a JSON object. This endpoint _also_ responds with the
 `sessionCookieUsername` and `sessionCookieUuid` in a `Set-Cookie` header - note
@@ -48,41 +48,45 @@ the user ends their session.
 
 __`POST /log-out`__
 
-Whereas `POST /foo/log-out` logs admins and regular users in to the ‘foo’ domain,
-`POST /log-in` logs super-administrators into the generic-user-server instance.
+Whereas `POST /v1/foo/log-out` logs admins and regular users out of the ‘v1/foo’
+domain, `POST /log-out` logs super-administrators out of the entire GUS instance.
 This endpoint changes `sessionCookieExpires` and `sessionCookieUuid` in the DB
 to `null`. It's not possible to revoke the `Set-Cookie` header, though it can be
 overwritten by a successful log-in later on. TODO maybe Set-Cookie to null?
 
-### Endpoints for superusers to read server settings
+### Endpoints for superadmins to read server settings
 
 __`GET /domains`__
 
 Responds with an array of domain names. Can only be accessed by superadmins.
 
-### Endpoints for superusers to query and edit the database
+### Endpoints for superadmins to query and edit the database
 
 __`GET /collections`__
 
 Responds with an array of collection names. Can only be accessed by superadmins.
 
-__`GET /collections/:COLLECTION_NAME`__
+__`GET /documents/:COLLECTION_NAME`__
 
-Responds with the full contents of a collection, as a JSON object where document
-IDs are keys, and documents are sub-objects. Can only be accessed by superadmins.
+Responds with an array of document IDs. Can only be accessed by superadmins.
 
-__`GET /collections/:COLLECTION_NAME/:DOCUMENT_ID`__
+__`GET /document/:COLLECTION_NAME/:DOCUMENT_ID`__
 
 Responds with the full contents of a document as a JSON object. Can only be
 accessed by superadmins.
 
-__`PUT /collections/:COLLECTION_NAME/:DOCUMENT_ID`__
+__`PUT /document/:COLLECTION_NAME/:DOCUMENT_ID`__
 
 The request body should be a JSON object with the properties which need updating.
 If a property is omitted, it will remain the same in the database. Strings in
 the form `2024-05-29T18:26:52.345Z` are converted to `Timestamp` instances.
 Objects in the form `{"_seconds":123,"_nanoseconds":456}` are also converted to
 `Timestamp` instances. Responds with `{"result":"ok"}` if the update succeeded.
+
+__`GET /dump-collection/:COLLECTION_NAME`__
+
+Responds with the full contents of a collection, as a JSON object where document
+IDs are keys, and documents are sub-objects. Can only be accessed by superadmins.
 
 ## Running the examples
 

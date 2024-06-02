@@ -7,12 +7,15 @@
         xmlns='http://www.w3.org/2000/svg'><circle r='4' fill='%23123456'/></svg>">
     <style>
         body { background: #132; color: #dfe; font: 18px/1.5 sans-serif }
+        button { padding: .4em 1em .5em!important; background: none;
+            border: none; outline: none; box-shadow: none; font-size: 18px }
         a { color: #6ec; transition: color 0.2s }
         a:hover { color: #8fd }
-        a.btn { display: inline-block; padding: .2em .8em; margin: .2em 0;
+        .btn { display: inline-block; padding: .2em .8em; margin: .2em 0;
             background: #687; border-radius: .2em; color: #fff!important;
             text-decoration: none; transition: background-color 0.2s }
-        a.btn:hover { background: #798 }
+        .btn:hover, .btn:focus { background: #798; cursor: pointer }
+        .btn:focus { outline: 2px solid #fff }
         form { padding: 1em; border: 2px solid #465; border-radius: .5em }
         label { display: block }
         .error, .result { margin: 0 }
@@ -36,12 +39,12 @@
     <h3>Anonymous, top-level endpoints</h3>
 
     <form>
-        <a class="btn" href="javascript:void(0)" onclick="gusGet(this.parentNode, '/')">Ping the root route</a>
+        <button class="get btn" data-route="/">Ping the root route</button>
         <pre class="error"></pre><pre class="result"></pre>
     </form>
 
     <form>
-        <a class="btn" href="javascript:void(0)" onclick="gusGet(this.parentNode, '/is-using-mock-db')">Is using mock DB?</a>
+        <button class="get btn" data-route="/is-using-mock-db">Is using mock DB?</button>
         <pre class="error"></pre><pre class="result"></pre>
     </form>
 
@@ -57,40 +60,88 @@
         <label for="for1Week">Log in for 1 week, not just 2 hours:
             <input type="checkbox" name="for1Week">
         </label>
-        <a class="btn" href="javascript:void(0)" onclick="gusPost(this.parentNode, '/log-in')">Superadmin Log In</a>
+        <button class="post btn" data-route="/log-in">Superadmin log in</button>
         <pre class="error"></pre><pre class="result"></pre>
     </form>
 
     <form>
-        <a class="btn" href="javascript:void(0)" onclick="gusPost(this.parentNode, '/log-out')">Superadmin Log Out</a>
+        <button class="post btn" data-route="/log-out">Superadmin log out</button>
         <pre class="error"></pre><pre class="result"></pre>
     </form>
 
-    <h3>Endpoints for superusers to read server settings</h3>
+    <h3>Endpoints for superadmins to read server settings</h3>
 
     <form>
-        <a class="btn" href="javascript:void(0)" onclick="gusGet(this.parentNode, '/domains')">domains</a>
+        <button class="get btn" data-route="/domains">List All Domains</button>
         <pre class="error"></pre><pre class="result"></pre>
     </form>
 
-    <h3>Endpoints for superusers to query and edit the database</h3>
+    <h3>Endpoints for superadmins to query and edit the database</h3>
 
     <form>
-        <a class="btn" href="javascript:void(0)" onclick="gusGet(this.parentNode, '/collections')">collections</a>
+        <button class="get btn" data-route="/collections">List All Collections</button>
+        <pre class="error"></pre><pre class="result"></pre>
+    </form>
+
+    <form>
+        <label for="COLLECTION_NAME">Collection Name:
+            <input type="text" name="COLLECTION_NAME">
+        </label>
+        <button class="get btn" data-route="/documents/:COLLECTION_NAME">List Document IDs</button>
+        <pre class="error"></pre><pre class="result"></pre>
+    </form>
+
+    <form>
+        <label for="COLLECTION_NAME">Collection Name:
+            <input type="text" name="COLLECTION_NAME">
+        </label>
+        <label for="COLLECTION_NAME">Document ID:
+            <input type="text" name="DOCUMENT_ID">
+        </label>
+        <button class="get btn" data-route="/document/:COLLECTION_NAME/:DOCUMENT_ID">Show Document Data</button>
+        <pre class="error"></pre><pre class="result"></pre>
+    </form>
+
+    <form>
+        <label for="COLLECTION_NAME">Collection Name:
+            <input type="text" name="COLLECTION_NAME">
+        </label>
+        <button class="get btn" data-route="/dump-collection/:COLLECTION_NAME">Dump All Collection Data</button>
         <pre class="error"></pre><pre class="result"></pre>
     </form>
 
     TODO NEXT add the rest of these
 
-    <script>
-        async function gusGet($form, route) {
+    <script>!function(){
+        Array.from(document.getElementsByClassName('get'))
+            .forEach($button => $button.addEventListener(
+                'click', evt => gusGet(evt, $button)));
+
+        Array.from(document.getElementsByClassName('post'))
+            .forEach($button => $button.addEventListener(
+                'click', evt => gusPost(evt, $button)));
+
+        async function gusGet(evt, $button) {
+            evt.preventDefault();
+            const $form = $button.parentNode;
+            const route = $button.getAttribute('data-route');
             const $error = $form.querySelector('.error');
             const $result = $form.querySelector('.result');
+            const $$inputs = Array.from($form.querySelectorAll('input'));
+
+            const modifiedRoute = route
+                .split('/')
+                .map(part =>
+                    part[0] !== ':'
+                        ? part
+                        : $$inputs.find($i => $i.getAttribute('name') === part.slice(1)).value
+                )
+                .join('/')
 
             let errorOrResult, status = [];
             try {
                 const response = await fetch(
-                    `http://localhost:1234${route}`,
+                    `http://localhost:1234${modifiedRoute}`,
                     {
                         mode: 'cors', // no-cors, *cors, same-origin
                         credentials: 'include', // include, *same-origin, omit - must use 'include', to send cookies
@@ -106,11 +157,15 @@
             $result.innerText = result ? `${status.join(' ')} ${JSON.stringify(result, null, 4)}` : '';
         }
 
-        async function gusPost($form, route) {
+        async function gusPost(evt, $button) {
+            evt.preventDefault();
+            const $form = $button.parentNode;
+            const route = $button.getAttribute('data-route');
             const $error = $form.querySelector('.error');
             const $result = $form.querySelector('.result');
-            const $$inputs = $form.querySelectorAll('input');
-            const data = Array.from($$inputs).reduce((obj, $input) => ({
+            const $$inputs = Array.from($form.querySelectorAll('input'));
+
+            const data = $$inputs.reduce((obj, $input) => ({
                 [$input.getAttribute('name')]: $input.getAttribute('type') === 'checkbox'
                     ? $input.checked // convert checkbox value to boolean
                     : $input.value,
@@ -139,6 +194,6 @@
             $error.innerText = error ? `${status.join(' ')} ${JSON.stringify(error, null, 4)}` : '';
             $result.innerText = result ? `${status.join(' ')} ${JSON.stringify(result, null, 4)}` : '';
         }
-    </script>
+    }()</script>
 </body>
 </html>

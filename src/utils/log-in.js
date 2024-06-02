@@ -12,7 +12,7 @@ export const logIn = async (
     // Run basic validation on the data POSTed by the user.
     const tCAP = typeof cookiesAsProps;
     if (tCAP !== 'undefined' && tCAP !== 'boolean' && cookiesAsProps !== null) throw Error(
-        'Invalid cookiesAsProps'); // TODO NEXT cookiesAsProps, which should default to false for security
+        'Invalid cookiesAsProps');
     const tF1W = typeof for1Week;
     if (tF1W !== 'undefined' && tF1W !== 'boolean' && for1Week !== null) throw Error(
         'Invalid for1Week');

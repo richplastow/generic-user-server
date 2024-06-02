@@ -28,6 +28,9 @@ export const getMockFirestore = (collections = []) => {
                         size: docs.length,
                     }
                 },
+                listDocuments() {
+                    return docs;
+                }
             }
         },
         databaseId: 'gus-mock-firestore',

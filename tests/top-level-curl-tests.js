@@ -24,18 +24,22 @@ export const topLevelCurlTests = [
         [res.http400badRequest, '{"error":"Must be logged in: Incorrect sessionCookieUuid"}'],
     ],
     [
-        [`-v`, `${req.origin}/collection/gus_superadmins`], // fails again, because session cookie is needed
+        [`-v`, `${req.origin}/documents/gus_superadmins`], // fails again, because session cookie is needed
         [res.http400badRequest, '{"error":"Must be logged in: No cookies"}'],
     ],
     [
-        [`-v`, `${req.origin}/collection/gus_superadmins/superadmin`], // fails again, because session cookie is needed
+        [`-v`, `${req.origin}/document/gus_superadmins/superadmin`], // fails again, because session cookie is needed
+        [res.http400badRequest, '{"error":"Must be logged in: No cookies"}'],
+    ],
+    [
+        [`-v`, `${req.origin}/dump-collection/gus_superadmins`], // fails again, because session cookie is needed
         [res.http400badRequest, '{"error":"Must be logged in: No cookies"}'],
     ],
     [
         [
             `-v`, `-X`, `PUT`,
             `-H`, req.jsonContentType,
-            `${req.origin}/collection/gus_superadmins/superadmin`
+            `${req.origin}/document/gus_superadmins/superadmin`
         ],
         [res.http400badRequest, '{"error":"Must be logged in: No cookies"}'],
     ],
@@ -87,7 +91,11 @@ export const topLevelCurlTests = [
         [res.http200ok, '{"result":["gus_daily_reports","gus_superadmins"]}'],
     ],
     [
-        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/collection/gus_superadmins`], // again, superadmin session cookie gives access
+        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/documents/gus_superadmins`], // again, superadmin session cookie gives access
+        [res.http200ok, '{"result":["superadmin"]}'],
+    ],
+    [
+        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/dump-collection/gus_superadmins`], // again, superadmin session cookie gives access
         [res.http200ok, {
             result: {
                 superadmin: {
@@ -112,12 +120,12 @@ export const topLevelCurlTests = [
                 },
                 baz: '2024-99-99T99:99:99.111Z', // invalid date is left
             }),
-            `${req.origin}/collection/gus_superadmins/superadmin`
+            `${req.origin}/document/gus_superadmins/superadmin`
         ],
         [res.http200ok, '{"result":"ok"}'],
     ],
     [
-        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/collection/gus_superadmins/superadmin`], // again, superadmin session cookie gives access
+        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/document/gus_superadmins/superadmin`], // again, superadmin session cookie gives access
         [res.http200ok, {
             result: {
                 isSuperadmin: true,
@@ -143,12 +151,12 @@ export const topLevelCurlTests = [
             `-v`, `-X`, `PUT`,
             `-H`, req.jsonContentType, `-H`, req.sessionSuperadmin,
             `-d`, `{"sessionCookieExpires":"2024-05-29T16:32:18.765Z"}`, // nearly 2 hours earlier than it originally was, which is in less than five minute's time
-            `${req.origin}/collection/gus_superadmins/superadmin`
+            `${req.origin}/document/gus_superadmins/superadmin`
         ],
         [res.http200ok, '{"result":"ok"}'],
     ],
     [
-        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/collection/gus_superadmins/superadmin`], // again, superadmin session cookie gives access
+        [`-v`, `-H`, req.sessionSuperadmin, `${req.origin}/document/gus_superadmins/superadmin`], // again, superadmin session cookie gives access
         [res.http200ok, {
             result: {
                 isSuperadmin: true,
@@ -170,7 +178,7 @@ export const topLevelCurlTests = [
             `-v`, `-X`, `PUT`,
             `-H`, req.jsonContentType, `-H`, req.sessionSuperadmin,
             `-d`, `{"sessionCookieExpires":"2024-05-29T16:26:52.345Z"}`, // 2 hours earlier than it originally was, which is in the past
-            `${req.origin}/collection/gus_superadmins/superadmin`
+            `${req.origin}/document/gus_superadmins/superadmin`
         ],
         [res.http200ok, '{"result":"ok"}'],
     ],

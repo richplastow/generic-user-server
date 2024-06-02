@@ -46,13 +46,14 @@ export class GenericUserServer {
                 handler: async (req, res) => {
                     let error, result, statusCode;
                     try {
-                        result = await logIn(deps, firestore, req.body, `${domain}_users`);
+                        result = await logIn(
+                            deps,
+                            firestore,
+                            req.body,
+                            res,
+                            `${domain}_users`,
+                        );
                         statusCode = 200;
-                        const { sessionCookieUsername, sessionCookieUuid } = result;
-                        res.setHeader('Set-Cookie', [
-                            `sessionCookieUsername=${sessionCookieUsername}`,
-                            `sessionCookieUuid=${sessionCookieUuid}`,
-                        ]);
                     } catch (err) {
                         error = err.message;
                         statusCode = 400;

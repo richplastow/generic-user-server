@@ -2,9 +2,13 @@ import { pbkdf2Sync } from 'node:crypto';
 import { passwordRx, usernameRx } from './regexps.js';
 import { getFutureDate } from './get-future-date.js';
 
-export const logIn = async ({ getNowDate, randomUUID, Timestamp }, firestore, reqBody, userCollectionName) => {
-    const { for1Week, password, username } = reqBody;
-
+export const logIn = async (
+    { getNowDate, randomUUID, Timestamp },
+    firestore,
+    { cookiesAsProps, for1Week, password, username },
+    res,
+    userCollectionName,
+) => {
     // Run basic validation on the data POSTed by the user.
     const tCAP = typeof cookiesAsProps;
     if (tCAP !== 'undefined' && tCAP !== 'boolean' && cookiesAsProps !== null) throw Error(
@@ -22,12 +26,24 @@ export const logIn = async ({ getNowDate, randomUUID, Timestamp }, firestore, re
 
     // TODO properly deal with a user logged in elsewhere
     const { isLoggedIn, pwHash, pwSalt, sessionCookieExpires, sessionCookieUuid } = userDoc.data();
-    if (isLoggedIn) return {
-        message: `'${username}' was already logged in`,
-        sessionCookieExpires,
-        sessionCookieUsername: username,
-        sessionCookieUuid,
-    };
+    if (isLoggedIn) {
+        if (cookiesAsProps) {
+            return {
+                message: `'${username}' was already logged in`,
+                sessionCookieExpires,
+                sessionCookieUsername: username,
+                sessionCookieUuid,
+            }
+        }
+        res.setHeader('Set-Cookie', [
+            `sessionCookieUsername=${username}; SameSite=None`,
+            `sessionCookieUuid=${sessionCookieUuid}; SameSite=None`,
+        ]);
+        return {
+            message: `'${username}' was already logged in`,
+            sessionCookieExpires,
+        }
+    }
 
     // Check that the password is correct.
     // Based on https://www.geeksforgeeks.org/node-js-password-hashing-crypto-module/.
@@ -54,10 +70,25 @@ export const logIn = async ({ getNowDate, randomUUID, Timestamp }, firestore, re
         sessionCookieUuid: newSessionCookieUuid,
     });
 
+    // If the request set `cookiesAsProps` to `true`, send `sessionCookieUuid`
+    // and `sessionCookieUsername` as JSON properties, not in "Set-Cookie".
+    if (cookiesAsProps) {
+        return {
+            message: `'${username}' successfully logged in`,
+            sessionCookieExpires: expiryJson,
+            sessionCookieUsername: username,
+            sessionCookieUuid: newSessionCookieUuid,
+        };    
+    }
+
+    // Otherwise, `cookiesAsProps` is falsey, so send `sessionCookieUuid` and
+    // `sessionCookieUsername` in "Set-Cookie", not as JSON properties.
+    res.setHeader('Set-Cookie', [
+        `sessionCookieUsername=${username}; SameSite=None`,
+        `sessionCookieUuid=${newSessionCookieUuid}; SameSite=None`,
+    ]);
     return {
         message: `'${username}' successfully logged in`,
         sessionCookieExpires: expiryJson,
-        sessionCookieUsername: username,
-        sessionCookieUuid: newSessionCookieUuid,
     };
 };

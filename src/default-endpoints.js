@@ -75,18 +75,14 @@ export const defaultEndpoints = [
         handler: async (req, res, { firestore, deps }) => {
             let error, result, statusCode;
             try {
-                statusCode = 200;
                 result = await logIn(
                     deps,
                     firestore,
                     req.body,
+                    res,
                     'gus_superadmins'
                 );
-                const { sessionCookieUsername, sessionCookieUuid } = result;
-                res.setHeader('Set-Cookie', [
-                    `sessionCookieUsername=${sessionCookieUsername}; SameSite=None`,
-                    `sessionCookieUuid=${sessionCookieUuid}; SameSite=None`,
-                ]);
+                statusCode = 200;
             } catch (err) {
                 statusCode = 400;
                 error = err.message;

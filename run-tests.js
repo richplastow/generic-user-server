@@ -29,7 +29,7 @@ const slowResolvingCurlTest = async testSuite => new Promise((resolve, reject) =
             if (acTrim !== expected) {
                 errors.push(`${testSuiteName}: stdout "${acTrim}" not "${expected}"`);
             } else {
-                curlTests.forEach(([args, expectedResults]) => {
+                curlTests.forEach(([args, expectedResults, unexpectedResults = []]) => {
                     const { stdout, stderr, status } = spawnSync('curl', args);
                     if (status !== 0) {
                         errors.push(`${testSuiteName}: status ${status
@@ -46,7 +46,7 @@ const slowResolvingCurlTest = async testSuite => new Promise((resolve, reject) =
                                     } to pass a stderr or stdout line of:\n    curl '${args.join("' '")}'`);
                                 console.log('\n\n\n\n', args, ':\n');
                                 console.log('allOutput:', allOutput, '\n\n');
-                            }    
+                            }
                         } else {
                             const expectedStr = typeof expectedResult === 'object'
                                 ? JSON.stringify(expectedResult) : expectedResult.trim();
@@ -55,10 +55,30 @@ const slowResolvingCurlTest = async testSuite => new Promise((resolve, reject) =
                                     }" not found in stderr or stdout of:\n    curl '${args.join("' '")}'`);
                                 console.log('\n\n\n\n', args, ':\n');
                                 console.log('allOutput:', allOutput, '\n\n');
-                            }    
+                            }
                         }
                     });
-                });    
+                    // TODO D.R.Y.
+                    unexpectedResults.forEach(unexpectedResult => {
+                        if (unexpectedResult instanceof RegExp) {
+                            if (allOutput.some(line => unexpectedResult.test(line))) {
+                                errors.push(`${testSuiteName}: Expected ${unexpectedResult
+                                    } to fail all stderr and stdout lines of:\n    curl '${args.join("' '")}'`);
+                                console.log('\n\n\n\n', args, ':\n');
+                                console.log('allOutput:', allOutput, '\n\n');
+                            }
+                        } else {
+                            const unexpectedStr = typeof unexpectedResult === 'object'
+                                ? JSON.stringify(unexpectedResult) : unexpectedResult.trim();
+                            if (allOutput.includes(unexpectedStr)) {
+                                errors.push(`${testSuiteName}: Expected result "${unexpectedStr
+                                    }" NOT to appear in stderr and stdout of:\n    curl '${args.join("' '")}'`);
+                                console.log('\n\n\n\n', args, ':\n');
+                                console.log('allOutput:', allOutput, '\n\n');
+                            }
+                        }
+                    });
+                });
             }
             subProcess.kill('SIGINT'); // equivalent to ctrl-c
         });
@@ -98,7 +118,7 @@ function showTestResults(testSuiteName, resolveOrReject) {
     if (errors.length) {
         console.error(`${testSuiteName}: ${errors.length} error(s):\n` + errors.join('\n'));
     } else {
-        console.log(`${testSuiteName}: All tests passed`);    
+        console.log(`${testSuiteName}: All tests passed`);
     }
     errors = [];
     resolveOrReject();

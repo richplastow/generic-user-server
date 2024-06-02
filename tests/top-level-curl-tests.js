@@ -66,8 +66,6 @@ export const topLevelCurlTests = [
                 result: {
                     message: "'superadmin' successfully logged in",
                     sessionCookieExpires: "2024-05-29T18:26:52.345Z",
-                    sessionCookieUsername: 'superadmin',
-                    sessionCookieUuid: '12345678-abcd-cdef-1234-0123456789ab',
                 }
             }
         ],

@@ -17,7 +17,7 @@ export const logInCurlTests = [
     ],
     // [ // Body is invalid JSON. TODO make GUS respond to all exceptions better
     //     [`-v`, `-X`, `POST`, `-d`, `{"password":"my_pass","username":"supe`, `${req.origin}/log-in`],
-    //     [res.http400badRequest, '< X-Powered-By: Express', '{"error":"Invalid password"}'],
+    //     [res.http400badRequest, '????'],
     // ],
     [ // cookiesAsProps is not undefined, null or boolean.
         [

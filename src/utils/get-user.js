@@ -7,6 +7,10 @@ export const getUser = async ({ getNowDate, Timestamp }, cookieRaw, firestore, u
     const parsedCookies = parseDelimitedData('; ', cookieRaw); // TODO deal with just ';'
     const { sessionCookieUsername, sessionCookieUuid } = parsedCookies;
 
+    // Deal with the special case of a logged-out user.
+    if (sessionCookieUsername === 'logged-out' && sessionCookieUuid === 'logged-out')
+        throw Error(`User has been logged out`);
+
     // Run basic validation on the user's 'Cookie' header.
     if (typeof sessionCookieUsername !== 'string') throw Error(`No sessionCookieUsername`);
     if (typeof sessionCookieUuid !== 'string') throw Error(`No sessionCookieUuid`);

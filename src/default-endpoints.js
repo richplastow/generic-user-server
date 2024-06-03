@@ -59,9 +59,13 @@ export const defaultEndpoints = [
         path: `/log-out`,
         handler: async (req, res, _gus, userKit) => {
             let error, result, statusCode;
-            try { // TODO make logOut() throw exceptions, or remove `try { ...`
+            try {
+                result = await logOut(
+                    userKit,
+                    req.body,
+                    res,
+                );
                 statusCode = 200;
-                result = await logOut(userKit);
             } catch (err) {
                 statusCode = 400;
                 error = err.message;

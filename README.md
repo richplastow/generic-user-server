@@ -51,8 +51,8 @@ __`POST /log-out`__
 Whereas `POST /v1/foo/log-out` logs admins and regular users out of the ‘v1/foo’
 domain, `POST /log-out` logs super-administrators out of the entire GUS instance.
 This endpoint changes `sessionCookieExpires` and `sessionCookieUuid` in the DB
-to `null`. It's not possible to revoke the `Set-Cookie` header, though it can be
-overwritten by a successful log-in later on. TODO maybe Set-Cookie to null?
+to `null`. It's not possible to revoke the `Set-Cookie` header, so both cookie
+values are replaced with the special string `"logged-out"`.
 
 ### Endpoints for superadmins to read server settings
 

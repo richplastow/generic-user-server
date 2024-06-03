@@ -3,12 +3,14 @@ import { spawn, spawnSync } from 'node:child_process';
 import { example1CurlTests, example1SubProcessPath } from './examples/example-1-curl-tests.js';
 import { getUserCurlTests, getUserSubProcessPath } from './src/utils-tests/get-user-curl-tests.js';
 import { logInCurlTests, logInSubProcessPath } from './src/utils-tests/log-in-curl-tests.js';
+import { logOutCurlTests, logOutSubProcessPath } from './src/utils-tests/log-out-curl-tests.js';
 import { topLevelCurlTests, topLevelSubProcessPath } from './tests/top-level-curl-tests.js';
 
 const testSuites = [
     [ 'example-1', 'example-1', example1CurlTests, example1SubProcessPath ],
     [ 'getUser()', 'vanilla-gus', getUserCurlTests, getUserSubProcessPath ],
     [ 'logIn()', 'vanilla-gus', logInCurlTests, logInSubProcessPath ],
+    [ 'logOut()', 'vanilla-gus', logOutCurlTests, logOutSubProcessPath ],
     [ 'top-level', 'vanilla-gus', topLevelCurlTests, topLevelSubProcessPath ],
 ];
 

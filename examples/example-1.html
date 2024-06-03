@@ -95,10 +95,24 @@
         <label for="COLLECTION_NAME">Collection Name:
             <input type="text" name="COLLECTION_NAME">
         </label>
-        <label for="COLLECTION_NAME">Document ID:
+        <label for="DOCUMENT_ID">Document ID:
             <input type="text" name="DOCUMENT_ID">
         </label>
         <button class="get btn" data-route="/document/:COLLECTION_NAME/:DOCUMENT_ID">Show Document Data</button>
+        <pre class="error"></pre><pre class="result"></pre>
+    </form>
+
+    <form>
+        <label for="COLLECTION_NAME">Collection Name:
+            <input type="text" name="COLLECTION_NAME">
+        </label>
+        <label for="DOCUMENT_ID">Document ID:
+            <input type="text" name="DOCUMENT_ID">
+        </label>
+        <label for="body">Body:
+            <textarea type="text" name="body">{}</textarea>
+        </label>
+        <button class="put btn" data-route="/document/:COLLECTION_NAME/:DOCUMENT_ID">Update a Document</button>
         <pre class="error"></pre><pre class="result"></pre>
     </form>
 
@@ -120,6 +134,10 @@
         Array.from(document.getElementsByClassName('post'))
             .forEach($button => $button.addEventListener(
                 'click', evt => gusPost(evt, $button)));
+
+        Array.from(document.getElementsByClassName('put'))
+            .forEach($button => $button.addEventListener(
+                'click', evt => gusPut(evt, $button)));
 
         async function gusGet(evt, $button) {
             evt.preventDefault();
@@ -165,6 +183,21 @@
             const $result = $form.querySelector('.result');
             const $$inputs = Array.from($form.querySelectorAll('input'));
 
+            // TODO use this instead
+            // const data = $$inputs
+            //     .map($input => [
+            //         $input.getAttribute('name'),
+            //         $input.getAttribute('type'),
+            //         $input,
+            //     ])
+            //     .filter(([ name ]) => /^[a-z0-9]+$/.test(name)) // not "ALL_CAPS"
+            //     .reduce((obj, [ name, type, $input ]) => ({
+            //         [name]: type === 'checkbox'
+            //             ? $input.checked // convert checkbox value to boolean
+            //             : $input.value,
+            //         ...obj,
+            //     }), {});
+
             const data = $$inputs.reduce((obj, $input) => ({
                 [$input.getAttribute('name')]: $input.getAttribute('type') === 'checkbox'
                     ? $input.checked // convert checkbox value to boolean
@@ -185,6 +218,50 @@
                         redirect: 'follow', // manual, *follow, error
                         referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
                         body: JSON.stringify(data), // body data type must match "Content-Type" header
+                    },
+                );
+                status = [ response.status, response.statusText ];
+                errorOrResult = await response.json();
+            } catch(err) { errorOrResult = { error: err.message } }
+            const { error, result } = errorOrResult;
+            $error.innerText = error ? `${status.join(' ')} ${JSON.stringify(error, null, 4)}` : '';
+            $result.innerText = result ? `${status.join(' ')} ${JSON.stringify(result, null, 4)}` : '';
+        }
+
+        async function gusPut(evt, $button) {
+            evt.preventDefault();
+            const $form = $button.parentNode;
+            const route = $button.getAttribute('data-route');
+            const $error = $form.querySelector('.error');
+            const $result = $form.querySelector('.result');
+            const $$inputs = Array.from($form.querySelectorAll('input,textarea'));
+
+            const modifiedRoute = route
+                .split('/')
+                .map(part =>
+                    part[0] !== ':'
+                        ? part
+                        : $$inputs.find($i => $i.getAttribute('name') === part.slice(1)).value
+                )
+                .join('/')
+
+            const data = $$inputs
+                .find($input => $input.getAttribute('name') === 'body')
+                .value;
+
+            let errorOrResult, status = [];
+            try {
+                const response = await fetch(
+                    `http://localhost:1234${modifiedRoute}`,
+                    {
+                        method: 'PUT', // *GET, POST, PUT, DELETE, etc.
+                        mode: 'cors', // no-cors, *cors, same-origin
+                        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                        credentials: 'include', // include, *same-origin, omit - must use 'include', to send cookies
+                        headers: { 'Content-Type': 'application/json' },
+                        redirect: 'follow', // manual, *follow, error
+                        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                        body: data, // body data type must match "Content-Type" header
                     },
                 );
                 status = [ response.status, response.statusText ];
